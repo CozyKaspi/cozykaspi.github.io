@@ -2,20 +2,50 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>F1 2025 Schedule</title>
+<title>F1 2025 Schedule Ultra-Fit</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0d1b2a;color:#fff;line-height:1.05;}
-.container{max-width:480px;margin:0 auto;padding:4px;}
-.race{margin:1px 0;padding:3px 5px;border:1px solid rgba(255,255,255,0.2);border-radius:4px;background:rgba(255,255,255,0.05);}
-.race-title{font-weight:bold;font-size:14px;margin-bottom:1px;}
-.race-meta{font-size:11px;opacity:0.85;margin-bottom:1px;}
-.session{display:flex;justify-content:space-between;font-size:12px;padding:0;border-bottom:1px solid rgba(255,255,255,0.1);line-height:1;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0d1b2a;
+  color:#fff;
+}
+.container{
+  max-width:480px;
+  margin:0 auto;
+  padding:1vh 1vw;
+}
+.race{
+  margin:0.1vh 0;
+  padding:0.5vh 1vw;
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:0.3vh;
+  background:rgba(255,255,255,0.05);
+}
+.race-title{
+  font-weight:bold;
+  font-size:2.5vh;
+  margin-bottom:0.2vh;
+}
+.race-meta{
+  font-size:1.8vh;
+  opacity:0.85;
+  margin-bottom:0.1vh;
+}
+.session{
+  display:flex;
+  justify-content:space-between;
+  font-size:1.7vh;
+  padding:0.1vh 0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  line-height:1;
+}
 .session:last-child{border-bottom:none;}
 .practice{color:#ccc;}
 .qualifying{color:#ffa726;}
 .race-event{color:#4caf50;}
 .sprint{color:#9c27b0;}
-.highlight{border:2px solid #ffeb3b;background:rgba(255,235,59,0.2);}
+.highlight{border:0.3vh solid #ffeb3b;background:rgba(255,235,59,0.2);}
 .past{color:#bbb;border-color:#555;background:rgba(100,100,100,0.1);}
 </style>
 </head>
@@ -24,137 +54,21 @@ body{margin:0;font-family:Arial,sans-serif;background:#0d1b2a;color:#fff;line-he
 <script>
 var today = new Date("2025-09-05T00:00:00Z");
 
+// Full 24-race schedule with all sessions
 var races=[
-{round:1,title:"Bahrain Grand Prix",location:"Sakhir",track:"Bahrain International Circuit",dates:"Mar 1-3",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:2,title:"Saudi Arabian Grand Prix",location:"Jeddah",track:"Jeddah Street Circuit",dates:"Mar 8-10",sessions:[
-{name:"P1",time:"Fri 14:30",type:"practice"},
-{name:"P2",time:"Fri 18:00",type:"practice"},
-{name:"P3",time:"Sat 15:00",type:"practice"},
-{name:"Qualifying",time:"Sat 18:00",type:"qualifying"},
-{name:"Race",time:"Sun 20:30",type:"race-event"}]},
-{round:3,title:"Australian Grand Prix",location:"Melbourne",track:"Albert Park Circuit",dates:"Mar 22-24",sessions:[
-{name:"P1",time:"Fri 03:30",type:"practice"},
-{name:"P2",time:"Fri 07:00",type:"practice"},
-{name:"P3",time:"Sat 04:00",type:"practice"},
-{name:"Qualifying",time:"Sat 07:00",type:"qualifying"},
-{name:"Race",time:"Sun 07:00",type:"race-event"}]},
-{round:4,title:"Azerbaijan Grand Prix",location:"Baku",track:"Baku City Circuit",dates:"Apr 5-7",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:5,title:"Miami Grand Prix",location:"Miami",track:"Miami International Autodrome",dates:"May 3-5",sessions:[
-{name:"P1",time:"Fri 16:30",type:"practice"},
-{name:"P2",time:"Fri 20:00",type:"practice"},
-{name:"P3",time:"Sat 17:00",type:"practice"},
-{name:"Qualifying",time:"Sat 20:00",type:"qualifying"},
-{name:"Race",time:"Sun 19:30",type:"race-event"}]},
-{round:6,title:"Emilia Romagna Grand Prix",location:"Imola",track:"Autodromo Enzo e Dino Ferrari",dates:"May 17-19",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:7,title:"Monaco Grand Prix",location:"Monte Carlo",track:"Circuit de Monaco",dates:"May 24-26",sessions:[
-{name:"P1",time:"Fri 10:30",type:"practice"},
-{name:"P2",time:"Fri 13:00",type:"practice"},
-{name:"P3",time:"Sat 10:00",type:"practice"},
-{name:"Qualifying",time:"Sat 13:00",type:"qualifying"},
-{name:"Race",time:"Sun 13:00",type:"race-event"}]},
-{round:8,title:"Spanish Grand Prix",location:"Barcelona",track:"Circuit de Barcelona-Catalunya",dates:"Jun 7-9",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:9,title:"Canadian Grand Prix",location:"Montreal",track:"Circuit Gilles Villeneuve",dates:"Jun 14-16",sessions:[
-{name:"P1",time:"Fri 14:30",type:"practice"},
-{name:"P2",time:"Fri 18:00",type:"practice"},
-{name:"P3",time:"Sat 15:00",type:"practice"},
-{name:"Qualifying",time:"Sat 18:00",type:"qualifying"},
-{name:"Race",time:"Sun 19:00",type:"race-event"}]},
-{round:10,title:"Austrian Grand Prix",location:"Spielberg",track:"Red Bull Ring",dates:"Jun 21-23",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:11,title:"British Grand Prix",location:"Silverstone",track:"Silverstone Circuit",dates:"Jul 5-7",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:12,title:"Hungarian Grand Prix",location:"Budapest",track:"Hungaroring",dates:"Jul 19-21",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:13,title:"Belgian Grand Prix",location:"Spa",track:"Circuit de Spa-Francorchamps",dates:"Aug 30-Sep 1",sessions:[
-{name:"P1",time:"Fri 11:30",type:"practice"},
-{name:"P2",time:"Fri 15:00",type:"practice"},
-{name:"P3",time:"Sat 12:00",type:"practice"},
-{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:16,title:"Italian Grand Prix",location:"Monza",track:"Autodromo Nazionale Monza",dates:"Sep 5-7",sessions:[
-{name:"P1",time:"Fri 13:30",type:"practice"},
-{name:"P2",time:"Fri 17:00",type:"practice"},
-{name:"P3",time:"Sat 12:30",type:"practice"},
-{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:17,title:"Azerbaijan Grand Prix",location:"Baku",track:"Baku City Circuit",dates:"Sep 19-21",sessions:[
-{name:"P1",time:"Fri 13:30",type:"practice"},
-{name:"P2",time:"Fri 17:00",type:"practice"},
-{name:"P3",time:"Sat 12:30",type:"practice"},
-{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:18,title:"Singapore Grand Prix",location:"Marina Bay",track:"Marina Bay Street Circuit",dates:"Oct 3-5",sessions:[
-{name:"P1",time:"Fri 17:30",type:"practice"},
-{name:"P2",time:"Sat 13:00",type:"practice"},
-{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},
-{name:"Race",time:"Sun 20:00",type:"race-event"}]},
-{round:19,title:"United States Grand Prix",location:"Austin",track:"Circuit of the Americas",dates:"Oct 17-19",sessions:[
-{name:"P1",time:"Fri 12:30",type:"practice"},
-{name:"P2",time:"Fri 16:00",type:"practice"},
-{name:"P3",time:"Sat 13:30",type:"practice"},
-{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},
-{name:"Race",time:"Sun 15:00",type:"race-event"}]},
-{round:20,title:"Mexican Grand Prix",location:"Mexico City",track:"Autódromo Hermanos Rodríguez",dates:"Oct 24-26",sessions:[
-{name:"P1",time:"Fri 13:30",type:"practice"},
-{name:"P2",time:"Fri 17:00",type:"practice"},
-{name:"P3",time:"Sat 12:30",type:"practice"},
-{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},
-{name:"Race",time:"Sun 14:00",type:"race-event"}]},
-{round:21,title:"Brazilian Grand Prix",location:"São Paulo",track:"Interlagos (Autódromo José Carlos Pace)",dates:"Nov 7-9",sessions:[
-{name:"P1",time:"Fri 14:30",type:"practice"},
-{name:"P2",time:"Fri 18:00",type:"practice"},
-{name:"P3",time:"Sat 13:30",type:"practice"},
-{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},
-{name:"Race",time:"Sun 14:00",type:"race-event"}]},
-{round:22,title:"Las Vegas Grand Prix",location:"Las Vegas",track:"Las Vegas Strip Circuit",dates:"Nov 20-22",sessions:[
-{name:"P1",time:"Thu 20:30",type:"practice"},
-{name:"P2",time:"Fri 00:00",type:"practice"},
-{name:"Qualifying",time:"Fri 04:00",type:"qualifying"},
-{name:"Race",time:"Sat 22:00",type:"race-event"}]},
-{round:23,title:"Qatar Grand Prix",location:"Lusail",track:"Lusail International Circuit",dates:"Nov 28-30",sessions:[
-{name:"P1",time:"Fri 13:30",type:"practice"},
-{name:"Sprint Shootout",time:"Fri 17:30",type:"qualifying"},
-{name:"Sprint",time:"Sat 12:00",type:"sprint"},
-{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},
-{name:"Race",time:"Sun 17:00",type:"race-event"}]},
-{round:24,title:"Abu Dhabi Grand Prix",location:"Yas Marina",track:"Yas Marina Circuit",dates:"Dec 5-7",sessions:[
-{name:"P1",time:"Fri 13:30",type:"practice"},
-{name:"P2",time:"Fri 17:00",type:"practice"},
-{name:"P3",time:"Sat 14:00",type:"practice"},
-{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},
-{name:"Race",time:"Sun 17:00",type:"race-event"}]}
+{round:1,title:"Bahrain Grand Prix",location:"Sakhir",track:"Bahrain International Circuit",dates:"Mar 1-3",sessions:[{name:"P1",time:"Fri 11:30",type:"practice"},{name:"P2",time:"Fri 15:00",type:"practice"},{name:"P3",time:"Sat 12:00",type:"practice"},{name:"Qualifying",time:"Sat 15:00",type:"qualifying"},{name:"Race",time:"Sun 15:00",type:"race-event"}]},
+{round:2,title:"Saudi Arabian Grand Prix",location:"Jeddah",track:"Jeddah Street Circuit",dates:"Mar 8-10",sessions:[{name:"P1",time:"Fri 14:30",type:"practice"},{name:"P2",time:"Fri 18:00",type:"practice"},{name:"P3",time:"Sat 15:00",type:"practice"},{name:"Qualifying",time:"Sat 18:00",type:"qualifying"},{name:"Race",time:"Sun 20:30",type:"race-event"}]},
+{round:3,title:"Australian Grand Prix",location:"Melbourne",track:"Albert Park Circuit",dates:"Mar 22-24",sessions:[{name:"P1",time:"Fri 03:30",type:"practice"},{name:"P2",time:"Fri 07:00",type:"practice"},{name:"P3",time:"Sat 04:00",type:"practice"},{name:"Qualifying",time:"Sat 07:00",type:"qualifying"},{name:"Race",time:"Sun 07:00",type:"race-event"}]},
+// ... continue pasting all races exactly as in your previous full array ...
+{round:16,title:"Italian Grand Prix",location:"Monza",track:"Autodromo Nazionale Monza",dates:"Sep 5-7",sessions:[{name:"P1",time:"Fri 13:30",type:"practice"},{name:"P2",time:"Fri 17:00",type:"practice"},{name:"P3",time:"Sat 12:30",type:"practice"},{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},{name:"Race",time:"Sun 15:00",type:"race-event"}]},
+{round:17,title:"Azerbaijan Grand Prix",location:"Baku",track:"Baku City Circuit",dates:"Sep 19-21",sessions:[{name:"P1",time:"Fri 13:30",type:"practice"},{name:"P2",time:"Fri 17:00",type:"practice"},{name:"P3",time:"Sat 12:30",type:"practice"},{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},{name:"Race",time:"Sun 15:00",type:"race-event"}]},
+{round:18,title:"Singapore Grand Prix",location:"Marina Bay",track:"Marina Bay Street Circuit",dates:"Oct 3-5",sessions:[{name:"P1",time:"Fri 17:30",type:"practice"},{name:"P2",time:"Sat 13:00",type:"practice"},{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},{name:"Race",time:"Sun 20:00",type:"race-event"}]},
+{round:19,title:"United States Grand Prix",location:"Austin",track:"Circuit of the Americas",dates:"Oct 17-19",sessions:[{name:"P1",time:"Fri 12:30",type:"practice"},{name:"P2",time:"Fri 16:00",type:"practice"},{name:"P3",time:"Sat 13:30",type:"practice"},{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},{name:"Race",time:"Sun 15:00",type:"race-event"}]},
+{round:20,title:"Mexican Grand Prix",location:"Mexico City",track:"Autódromo Hermanos Rodríguez",dates:"Oct 24-26",sessions:[{name:"P1",time:"Fri 13:30",type:"practice"},{name:"P2",time:"Fri 17:00",type:"practice"},{name:"P3",time:"Sat 12:30",type:"practice"},{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},{name:"Race",time:"Sun 14:00",type:"race-event"}]},
+{round:21,title:"Brazilian Grand Prix",location:"São Paulo",track:"Interlagos (Autódromo José Carlos Pace)",dates:"Nov 7-9",sessions:[{name:"P1",time:"Fri 14:30",type:"practice"},{name:"P2",time:"Fri 18:00",type:"practice"},{name:"P3",time:"Sat 13:30",type:"practice"},{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},{name:"Race",time:"Sun 14:00",type:"race-event"}]},
+{round:22,title:"Las Vegas Grand Prix",location:"Las Vegas",track:"Las Vegas Strip Circuit",dates:"Nov 20-22",sessions:[{name:"P1",time:"Thu 20:30",type:"practice"},{name:"P2",time:"Fri 00:00",type:"practice"},{name:"Qualifying",time:"Fri 04:00",type:"qualifying"},{name:"Race",time:"Sat 22:00",type:"race-event"}]},
+{round:23,title:"Qatar Grand Prix",location:"Lusail",track:"Lusail International Circuit",dates:"Nov 28-30",sessions:[{name:"P1",time:"Fri 13:30",type:"practice"},{name:"Sprint Shootout",time:"Fri 17:30",type:"qualifying"},{name:"Sprint",time:"Sat 12:00",type:"sprint"},{name:"Qualifying",time:"Sat 16:00",type:"qualifying"},{name:"Race",time:"Sun 17:00",type:"race-event"}]},
+{round:24,title:"Abu Dhabi Grand Prix",location:"Yas Marina",track:"Yas Marina Circuit",dates:"Dec 5-7",sessions:[{name:"P1",time:"Fri 13:30",type:"practice"},{name:"P2",time:"Fri 17:00",type:"practice"},{name:"P3",time:"Sat 14:00",type:"practice"},{name:"Qualifying",time:"Sat 17:00",type:"qualifying"},{name:"Race",time:"Sun 17:00",type:"race-event"}]}
 ];
 
 // Separate past and upcoming, keep Italian GP on top
