@@ -16,6 +16,7 @@
  .race-event{color:#4caf50;}
  .sprint{color:#9c27b0;}
  .highlight{border:2px solid #ffeb3b;background:rgba(255,235,59,0.2);}
+ .past{color:#777;border-color:#555;background:rgba(100,100,100,0.1);}
 </style>
 </head>
 <body>
@@ -24,6 +25,19 @@
 var today = new Date("2025-09-05T00:00:00Z");
 
 var races=[
+ {round:1,title:"Bahrain Grand Prix",location:"Sakhir",track:"Bahrain International Circuit",dates:"Mar 1-3",sessions:[]},
+ {round:2,title:"Saudi Arabian Grand Prix",location:"Jeddah",track:"Jeddah Street Circuit",dates:"Mar 8-10",sessions:[]},
+ {round:3,title:"Australian Grand Prix",location:"Melbourne",track:"Albert Park Circuit",dates:"Mar 22-24",sessions:[]},
+ {round:4,title:"Azerbaijan Grand Prix",location:"Baku",track:"Baku City Circuit",dates:"Apr 5-7",sessions:[]},
+ {round:5,title:"Miami Grand Prix",location:"Miami",track:"Miami International Autodrome",dates:"May 3-5",sessions:[]},
+ {round:6,title:"Emilia Romagna Grand Prix",location:"Imola",track:"Autodromo Enzo e Dino Ferrari",dates:"May 17-19",sessions:[]},
+ {round:7,title:"Monaco Grand Prix",location:"Monte Carlo",track:"Circuit de Monaco",dates:"May 24-26",sessions:[]},
+ {round:8,title:"Spanish Grand Prix",location:"Barcelona",track:"Circuit de Barcelona-Catalunya",dates:"Jun 7-9",sessions:[]},
+ {round:9,title:"Canadian Grand Prix",location:"Montreal",track:"Circuit Gilles Villeneuve",dates:"Jun 14-16",sessions:[]},
+ {round:10,title:"Austrian Grand Prix",location:"Spielberg",track:"Red Bull Ring",dates:"Jun 21-23",sessions:[]},
+ {round:11,title:"British Grand Prix",location:"Silverstone",track:"Silverstone Circuit",dates:"Jul 5-7",sessions:[]},
+ {round:12,title:"Hungarian Grand Prix",location:"Budapest",track:"Hungaroring",dates:"Jul 19-21",sessions:[]},
+ {round:13,title:"Belgian Grand Prix",location:"Spa",track:"Circuit de Spa-Francorchamps",dates:"Aug 30-Sep 1",sessions:[]},
  {round:16,title:"Italian Grand Prix",location:"Monza",track:"Autodromo Nazionale Monza",dates:"Sep 5-7",sessions:[
   {name:"P1",time:"Fri 13:30",type:"practice"},
   {name:"P2",time:"Fri 17:00",type:"practice"},
@@ -87,34 +101,57 @@ var races=[
  ]}
 ];
 
-// Move Italian GP to top
+// Separate past races and upcoming
+var past=[], upcoming=[];
 for(var i=0;i<races.length;i++){
-  if(races[i].title==="Italian Grand Prix"){
-    var italian=races.splice(i,1)[0];
-    races.unshift(italian);
+  var r=races[i];
+  var parts=r.dates.split(" ");
+  var monthMap={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  var endStr=parts[parts.length-1];
+  var endDay=parseInt(endStr);
+  var monthStr=parts[0];
+  var month=monthMap[monthStr.substring(0,3)];
+  var startDay=parseInt(parts[1])||endDay;
+  var startDate=new Date(2025,month,startDay);
+  var endDate=new Date(2025,month,endDay);
+  if(endDate<today){past.push(r);}
+  else{upcoming.push(r);}
+}
+
+// Move Italian GP to top of upcoming and highlight
+for(var i=0;i<upcoming.length;i++){
+  if(upcoming[i].title==="Italian Grand Prix"){
+    var italian=upcoming.splice(i,1)[0];
+    upcoming.unshift(italian);
     break;
   }
 }
 
-var container=document.getElementById('schedule');
-for(var i=0;i<races.length;i++){
- var r=races[i];
- var div=document.createElement('div');
- div.className='race';
- if(r.title==="Italian Grand Prix"){div.className+=' highlight';}
- var t=document.createElement('div');t.className='race-title';t.innerHTML=r.title;div.appendChild(t);
- var m=document.createElement('div');m.className='race-meta';m.innerHTML=r.location+" • "+r.track+" • "+r.dates;div.appendChild(m);
- if(r.sessions&&r.sessions.length){
-   for(var j=0;j<r.sessions.length;j++){
-     var s=r.sessions[j];
-     var sDiv=document.createElement('div');
-     sDiv.className='session '+(s.type||'');
-     sDiv.innerHTML='<span>'+s.name+'</span><span>'+s.time+'</span>';
-     div.appendChild(sDiv);
-   }
- }
- container.appendChild(div);
+// Function to render races
+function renderRaces(list, container, extraClass){
+  for(var i=0;i<list.length;i++){
+    var r=list[i];
+    var div=document.createElement('div');
+    div.className='race'+(extraClass?' '+extraClass:'');
+    if(r.title==="Italian Grand Prix"){div.className+=' highlight';}
+    var t=document.createElement('div');t.className='race-title';t.innerHTML=r.title;div.appendChild(t);
+    var m=document.createElement('div');m.className='race-meta';m.innerHTML=r.location+" • "+r.track+" • "+r.dates;div.appendChild(m);
+    if(r.sessions&&r.sessions.length){
+      for(var j=0;j<r.sessions.length;j++){
+        var s=r.sessions[j];
+        var sDiv=document.createElement('div');
+        sDiv.className='session '+(s.type||'');
+        sDiv.innerHTML='<span>'+s.name+'</span><span>'+s.time+'</span>';
+        div.appendChild(sDiv);
+      }
+    }
+    container.appendChild(div);
+  }
 }
+
+var container=document.getElementById('schedule');
+renderRaces(upcoming, container);
+renderRaces(past, container, 'past');
 </script>
 </body>
 </html>
