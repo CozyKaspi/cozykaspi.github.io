@@ -18,50 +18,58 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
   box-shadow:0 1px 0 rgba(0,0,0,0.25) inset;
 }
 
-/* Countdown */
+/* Countdown - same look as cards; white text; same size as title */
 .countdown{
   margin:0.6vh 0 1vh 0;
-  padding:1vh 0.8vh;
+  padding:0.8vh;
   border-radius:8px;
-  background:linear-gradient(180deg, rgba(255,235,59,0.06), rgba(255,235,59,0.03));
-  border:1px solid rgba(255,235,59,0.12);
-  color:#111;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  color:#fff;
   font-weight:700;
   text-align:center;
-  font-size:3vh; /* larger font for countdown */
+  font-size:2.2vh; /* match .race-title */
 }
 
 /* Title / meta */
 .race-title{font-weight:700;font-size:2.2vh;color:#ffffff;margin-bottom:0.35vh;}
 .race-meta{font-size:1.4vh;opacity:0.9;margin-bottom:0.6vh;color:#d6e1ea;}
 
-/* Sessions: left name, (right time hidden) */
+/* Sessions: left name, right date (uniform alignment) */
 .session{
   display:flex;
-  justify-content:flex-start;
+  justify-content:space-between;
   align-items:center;
-  gap:0.6vh;
   font-size:1.5vh;
   padding:0.18vh 0;
   border-bottom:1px solid rgba(255,255,255,0.04);
   line-height:1.1;
 }
 .session:last-child{border-bottom:none;}
+.session-left{display:flex;align-items:center;gap:0.6vh;}
 .session-name{color:#e8eef6;font-weight:600;display:flex;align-items:center;gap:0.6vh}
-.session-time{display:none;color:#cfe3f4;}
-.session-date{font-size:1.1vh;opacity:0.9;color:#d6e1ea;margin-left:0.4vh}
+.session-date{font-size:1.1vh;opacity:0.95;color:#ffffff;margin-left:0.4vh;min-width:5.2em;text-align:right;} /* white by default, right aligned area */
 
-/* Badge styles for session types */
-.badge{display:inline-block;padding:0.12vh 0.6vh;border-radius:999px;font-size:1.1vh;margin-right:0.4vh;font-weight:700;color:#08121a}
-.type-qualifying .badge{background:#4fc3f7;color:#002b36}
-.type-race-event .badge{background:#ef9a9a;color:#4a0b0b}
-.type-sprint .badge{background:#c5e1a5;color:#0f3c11}
-.type-practice .badge{background:#b0bec5;color:#071416}
+/* Badge same background as card; only the text color indicates type */
+.badge{
+  display:inline-block;
+  padding:0.12vh 0.6vh;
+  border-radius:999px;
+  font-size:1.05vh;
+  margin-right:0.3vh;
+  font-weight:700;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  color:#ffffff; /* default white */
+}
 
-/* Optionally tint the session row slightly by type */
-.type-qualifying { background: linear-gradient(90deg, rgba(79,195,247,0.02), rgba(79,195,247,0.00)); }
-.type-race-event { background: linear-gradient(90deg, rgba(239,154,154,0.02), rgba(239,154,154,0.00)); }
-.type-sprint { background: linear-gradient(90deg, rgba(197,225,165,0.02), rgba(197,225,165,0.00)); }
+/* Type colours: user requested purple for race & sprint, orange for qualifying, white for P1/P2/P3 */
+.badge--race, .badge--sprint { color:#9C27B0; }     /* purple */
+.badge--qualifying { color:#FF9800; }              /* orange */
+.badge--practice { color:#ffffff; }                /* white (P1/P2/P3) */
+
+/* Remove row tinting (keep cards uniform) */
+.type-qualifying, .type-race-event, .type-sprint, .type-practice { background: none; }
 
 /* Past / current */
 .past{opacity:0.55;border-color:rgba(100,100,100,0.5);background:rgba(80,80,80,0.03);} 
@@ -155,8 +163,66 @@ function formatDateInZone(d, tz) {
   return parseInt(p.day,10).toString() + ' ' + MONTH_ABBREV[p.month-1];
 }
 
-var countdownInterval = null;
+/* derive canonical session label and short-type for colouring/semantics.
+   Allowed labels shown to the user: P1, P2, P3, Qualifying (or 'Qual'), Sprint (the sprint), Sprint Qualifying (if present), Race.
+   Colour mapping:
+     - P1/P2/P3 -> white
+     - Qualifying / Sprint Qualifying -> orange
+     - Sprint / Race -> purple
+*/
+function canonicalSessionInfo(session){
+  var name = (session && session.name) ? session.name.toString() : '';
+  var t = (session && session.type) ? session.type.toString() : '';
+  var lower = name.toLowerCase();
+  var info = { label: name, badgeClass: 'badge--practice', typeClass: 'type-practice' };
 
+  // P1/P2/P3 take precedence
+  if (/\bP1\b/i.test(name) || /^p1$/i.test(name)) { info.label = 'P1'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
+  if (/\bP2\b/i.test(name) || /^p2$/i.test(name)) { info.label = 'P2'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
+  if (/\bP3\b/i.test(name) || /^p3$/i.test(name)) { info.label = 'P3'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
+
+  // Sprint qualifying (often named 'Sprint Qualifying' or 'Sprint Qual.') => treat as qualifying (orange)
+  if (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') !== -1) {
+    info.label = 'Sprint Qualifying';
+    info.badgeClass = 'badge--qualifying';
+    info.typeClass = 'type-qualifying';
+    return info;
+  }
+
+  // Sprint (the sprint race) - type 'sprint' or name contains 'sprint' (but not sprint-qual)
+  if (t.toLowerCase() === 'sprint' || (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') === -1)) {
+    info.label = 'Sprint';
+    info.badgeClass = 'badge--sprint';
+    info.typeClass = 'type-sprint';
+    return info;
+  }
+
+  // Qualifying
+  if (t.toLowerCase() === 'qualifying' || lower.indexOf('qual') !== -1) {
+    info.label = 'Qual';
+    info.badgeClass = 'badge--qualifying';
+    info.typeClass = 'type-qualifying';
+    return info;
+  }
+
+  // Race
+  if (t.toLowerCase() === 'race-event' || lower.indexOf('race') !== -1) {
+    info.label = 'Race';
+    info.badgeClass = 'badge--race';
+    info.typeClass = 'type-race-event';
+    return info;
+  }
+
+  // Fallback: if it's a practice named differently but not P1/P2/P3, hide or treat as practice (white)
+  // We'll show the session.name as label but style as practice.
+  info.label = name || 'Session';
+  info.badgeClass = 'badge--practice';
+  info.typeClass = 'type-practice';
+  return info;
+}
+
+/* ---------- Load and render ---------- */
+var countdownInterval = null;
 function loadAndRender(){
   var scheduleDiv = document.getElementById('schedule');
   var countdownDiv = document.getElementById('countdown');
@@ -206,7 +272,7 @@ function loadAndRender(){
     upcoming.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
     past.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
 
-    // determine next race instant for countdown
+    // determine next race instant for countdown (earliest race session in upcoming)
     var nextRaceInstant = null, nextRaceObj = null;
     for (var u=0; u<upcoming.length; u++){
       var candidate = upcoming[u];
@@ -224,23 +290,10 @@ function loadAndRender(){
       }
     }
 
+    // render DOM
     scheduleDiv.innerHTML = '';
-
-    function typeClass(session){
-      var t = (session.type || '').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-');
-      if(!t) {
-        var n = (session.name||'').toLowerCase();
-        if(n.indexOf('sprint')>=0) t='sprint';
-        else if(n.indexOf('qual')>=0) t='qualifying';
-        else if(n.indexOf('race')>=0) t='race-event';
-        else t='practice';
-      }
-      return 'type-' + t;
-    }
-
     function stripYearFromDatesString(datesStr) {
       if (!datesStr || typeof datesStr !== 'string') return datesStr || '';
-      // remove any comma + space + 4-digit year OR trailing space + 4-digit year
       return datesStr.replace(/,?\s*\b\d{4}\b/g, '').trim();
     }
 
@@ -248,7 +301,7 @@ function loadAndRender(){
       var r = obj.race;
       var instants = obj.instants;
 
-      // compute race date string in race timezone (use race session if present)
+      // compute race date string (D Mmm) in race timezone (use race session if present)
       var raceInstant = null;
       for(var i=0;i<instants.length;i++){
         var it = instants[i];
@@ -260,53 +313,81 @@ function loadAndRender(){
       wrap.className = 'race' + (cls ? ' '+cls : '') + (isHighlight ? ' highlight' : '');
       var title = document.createElement('div'); title.className = 'race-title'; title.textContent = r.title;
       var meta = document.createElement('div'); meta.className = 'race-meta';
-      // strip year from r.dates for display (user requested no year)
       meta.textContent = r.location + ' • ' + r.track + ' • ' + stripYearFromDatesString(r.dates || '');
       wrap.appendChild(title); wrap.appendChild(meta);
-      for (var s=0; s<instants.length; s++){
+
+      for (var s=0;s<instants.length;s++){
         var item = instants[s];
+        var info = canonicalSessionInfo(item.session);
+
+        // only show the canonical sessions requested:
+        // P1, P2, P3, Qual (including Sprint Qualifying), Sprint, Race
+        // If session resolves to practice but is not P1/P2/P3, we still show it (fallback).
         var sessionDiv = document.createElement('div');
-        sessionDiv.className = 'session ' + typeClass(item.session);
+        sessionDiv.className = 'session ' + info.typeClass;
 
+        var left = document.createElement('div'); left.className = 'session-left';
         var nameSpan = document.createElement('span'); nameSpan.className='session-name';
-        var badge = document.createElement('span'); badge.className='badge';
-        var badgeText = (item.session.type || item.session.name || '').toString();
-        if(!badgeText) badgeText = 'Session';
-        if(badgeText.toLowerCase().indexOf('sprint')>=0) badgeText='Sprint';
-        else if(badgeText.toLowerCase().indexOf('qual')>=0) badgeText='Qual';
-        else if(badgeText.toLowerCase().indexOf('practice')>=0) badgeText=badgeText.toUpperCase();
+
+        var badge = document.createElement('span'); badge.className='badge ' + (info.badgeClass || '');
+        // Simplify badge text:
+        var badgeText = info.label;
+        // Normalize labels
+        if (/^p1$/i.test(info.label)) badgeText = 'P1';
+        else if (/^p2$/i.test(info.label)) badgeText = 'P2';
+        else if (/^p3$/i.test(info.label)) badgeText = 'P3';
+        else if (/sprint\s*qual/i.test(info.label)) badgeText = 'Sprint Qual';
+        else if (/sprint/i.test(info.label) && !/qual/i.test(info.label)) badgeText = 'Sprint';
+        else if (/qual/i.test(info.label)) badgeText = 'Qual';
+        else if (/race/i.test(info.label)) badgeText = 'Race';
+        else badgeText = info.label;
+
         badge.textContent = badgeText;
-
-        var label = document.createElement('span'); label.textContent = item.session && item.session.name ? item.session.name : 'Session';
-        nameSpan.appendChild(badge); nameSpan.appendChild(label);
-
-        var sessionDateSpan = document.createElement('span'); sessionDateSpan.className='session-date';
-        var sessionDateStr = item.instant ? formatDateInZone(item.instant, r.timezone) : '';
-        // Only show the session date if it is different from the race date (both omit year)
-        if(sessionDateStr && raceDateStr && sessionDateStr !== raceDateStr) {
-          sessionDateSpan.textContent = sessionDateStr;
-          nameSpan.appendChild(sessionDateSpan);
+        // label to show (avoid writing "Practice" when badge already covers it)
+        var labelText = '';
+        if (/^p1|p2|p3$/i.test(badgeText)) labelText = badgeText; // show P1/P2/P3
+        else if (badgeText === 'Qual' || badgeText === 'Sprint Qual' || badgeText === 'Sprint' || badgeText === 'Race') {
+          // Use friendly names
+          if (badgeText === 'Qual') labelText = 'Qualifying';
+          else if (badgeText === 'Sprint Qual') labelText = 'Sprint qualifying';
+          else labelText = badgeText;
+        } else {
+          // fallback to session.name (trim duplicates like 'Practice')
+          labelText = (item.session && item.session.name) ? item.session.name : badgeText;
         }
 
-        var timeSpan = document.createElement('span'); timeSpan.className='session-time';
-        var formatted = 'TBA';
-        if (item.instant && !isNaN(item.instant.getTime())) formatted = formatInOslo(item.instant);
-        timeSpan.textContent = formatted;
+        var label = document.createElement('span'); label.textContent = labelText;
+        nameSpan.appendChild(badge); nameSpan.appendChild(label);
+        left.appendChild(nameSpan);
 
-        sessionDiv.appendChild(nameSpan);
-        sessionDiv.appendChild(timeSpan);
+        // date on the right (only show if different from race date to avoid clutter) — but keep the right area for uniform alignment
+        var dateSpan = document.createElement('div'); dateSpan.className = 'session-date';
+        var sessionDateStr = item.instant ? formatDateInZone(item.instant, r.timezone) : '';
+        if (sessionDateStr && raceDateStr && sessionDateStr !== raceDateStr) {
+          dateSpan.textContent = sessionDateStr;
+        } else {
+          // keep empty string to preserve alignment and uniform look
+          dateSpan.textContent = '';
+        }
+
+        sessionDiv.appendChild(left);
+        sessionDiv.appendChild(dateSpan);
         wrap.appendChild(sessionDiv);
       }
+
       scheduleDiv.appendChild(wrap);
     }
 
+    // Render current first, then upcoming, then past
     if (current) renderBlock(current, '', true);
     for (var u=0; u<upcoming.length; u++) renderBlock(upcoming[u], '');
     for (var p=0; p<past.length; p++) renderBlock(past[p], 'past');
 
+    // updated timestamp
     var upd = document.getElementById('updated');
     upd.textContent = 'Last checked: ' + new Date().toLocaleString();
 
+    // Countdown handling
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
     if (nextRaceInstant && nextRaceObj) {
       function updateCountdown(){
@@ -322,7 +403,7 @@ function loadAndRender(){
         var mins = Math.floor((diff % (60*60*1000)) / (60*1000));
         var secs = Math.floor((diff % (60*1000)) / 1000);
         var human = (days>0?days+'d ':'') + pad(hours)+':'+pad(mins)+':'+pad(secs);
-        var oslo = formatInOslo(nextRaceInstant); // already uses D Mmm HH:MM
+        var oslo = formatInOslo(nextRaceInstant);
         countdownDiv.textContent = 'Next race: ' + nextRaceObj.title + ' — starts in ' + human + ' (Oslo: ' + oslo + ')';
       }
       updateCountdown();
@@ -342,6 +423,7 @@ function loadAndRender(){
 
 // initial
 loadAndRender();
+// refresh every minute for schedule; countdown updates every second via its own interval
 setInterval(loadAndRender, 60000);
 </script>
 </body>
