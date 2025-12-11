@@ -6,7 +6,7 @@
 <style>
 /* Layout */
 html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-family:Arial,Helvetica,sans-serif;}
-.container{box-sizing:border-box;padding:1vh;max-width:420px;margin:0 auto;overflow:auto;height:100%;}
+.container{box-sizing:border-box;padding:4vh 1vh;max-width:420px;margin:0 auto;overflow:auto;height:100%;}
 
 /* Card */
 .race{
@@ -18,15 +18,27 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
   box-shadow:0 1px 0 rgba(0,0,0,0.25) inset;
 }
 
+/* Countdown */
+.countdown{
+  margin:0.6vh 0 1vh 0;
+  padding:0.8vh;
+  border-radius:8px;
+  background:linear-gradient(180deg, rgba(255,235,59,0.06), rgba(255,235,59,0.03));
+  border:1px solid rgba(255,235,59,0.12);
+  color:#fff;
+  font-weight:700;
+}
+
 /* Title / meta */
 .race-title{font-weight:700;font-size:2.2vh;color:#ffffff;margin-bottom:0.35vh;}
 .race-meta{font-size:1.4vh;opacity:0.9;margin-bottom:0.6vh;color:#d6e1ea;}
 
-/* Sessions: left name, right time */
+/* Sessions: left name, (right time hidden) */
 .session{
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-start;
   align-items:center;
+  gap:0.6vh;
   font-size:1.5vh;
   padding:0.18vh 0;
   border-bottom:1px solid rgba(255,255,255,0.04);
@@ -34,10 +46,10 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
 }
 .session:last-child{border-bottom:none;}
 .session-name{color:#e8eef6;font-weight:600;}
-.session-time{color:#cfe3f4;}
+.session-time{display:none;color:#cfe3f4;}
 
 /* Past / current */
-.past{opacity:0.55;border-color:rgba(100,100,100,0.5);background:rgba(80,80,80,0.03);}
+.past{opacity:0.55;border-color:rgba(100,100,100,0.5);background:rgba(80,80,80,0.03);} 
 .highlight{border:0.28vh solid #ffeb3b;background:linear-gradient(0deg, rgba(255,250,200,0.03), rgba(255,250,200,0.015));}
 
 /* small footer */
@@ -46,7 +58,10 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
 </style>
 </head>
 <body>
-<div class="container" id="schedule">Loading schedule…</div>
+<div class="container">
+  <div id="countdown" class="countdown">Loading next race countdown…</div>
+  <div id="schedule">Loading schedule…</div>
+</div>
 <div class="footer" id="updated"></div>
 
 <script>
@@ -73,37 +88,28 @@ function getDatePartsForZone(dateObj, tz) {
     return { year:parseInt(res.year,10), month:parseInt(res.month,10), day:parseInt(res.day,10), hour:parseInt(res.hour,10), minute:parseInt(res.minute,10), second:parseInt(res.second,10) };
   } else {
     // fallback: parse formatted string like "DD/MM/YYYY, HH:MM:SS"
-    var s = formatter.format(dateObj); // e.g. "21/09/2025, 13:30:00"
+    var s = formatter.format(dateObj);
     var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}).*?(\d{1,2}):(\d{2}):?(\d{2})?/);
     if (m) {
       return { year:parseInt(m[3],10), month:parseInt(m[2],10), day:parseInt(m[1],10), hour:parseInt(m[4],10), minute:parseInt(m[5],10), second:parseInt(m[6]||'0',10) };
     } else {
-      // last-resort: use UTC parts (not ideal)
       return { year:dateObj.getUTCFullYear(), month:dateObj.getUTCMonth()+1, day:dateObj.getUTCDate(), hour:dateObj.getUTCHours(), minute:dateObj.getUTCMinutes(), second:dateObj.getUTCSeconds() };
     }
   }
 }
 
-// Convert a local wall-time (like "2025-09-19T13:30:00") in timezone tz to an instant Date.
-// Algorithm:
-//  - compute approxEpoch = Date.UTC(year,month-1,day,h,m,s)
-//  - format approxEpoch in tz to find what wall time it corresponds to
-//  - difference (approx - formattedWallUtc) gives offset to convert any wall time in that tz to epoch.
+// Convert a local wall-time (like "2026-09-19T13:30:00") in timezone tz to an instant Date.
 function localWallTimeToInstant(localIsoNoOffset, tz) {
   if (!localIsoNoOffset || !tz) return null;
   var parts = localIsoNoOffset.split(/[:T-]/).map(function(x){return parseInt(x,10);});
   if (parts.length < 3 || isNaN(parts[0])) return null;
   var year = parts[0], month = parts[1], day = parts[2], hour = parts[3]||0, minute = parts[4]||0, second = parts[5]||0;
 
-  // approx epoch if interpreted as UTC
   var approx = Date.UTC(year, month-1, day, hour, minute, second);
-
-  // get what that epoch shows as in the tz
   var formattedParts = getDatePartsForZone(new Date(approx), tz);
   var approxWallMillis = Date.UTC(formattedParts.year, formattedParts.month-1, formattedParts.day, formattedParts.hour, formattedParts.minute, formattedParts.second);
 
   var diff = approx - approxWallMillis;
-  // desired wall UTC from provided wall-time
   var desiredWallUtc = Date.UTC(year, month-1, day, hour, minute, second);
   var epoch = desiredWallUtc - diff;
   return new Date(epoch);
@@ -112,7 +118,6 @@ function localWallTimeToInstant(localIsoNoOffset, tz) {
 // Format instant into Oslo local string "YYYY-MM-DD HH:MM"
 function formatInOslo(d) {
   if (!d || isNaN(d.getTime())) return 'TBA';
-  // use Intl to get parts, fallback if needed
   var opts = { timeZone: 'Europe/Oslo', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false };
   var formatter = new Intl.DateTimeFormat('en-GB', opts);
   if (typeof formatter.formatToParts === 'function') {
@@ -121,7 +126,7 @@ function formatInOslo(d) {
     for (var i=0;i<parts.length;i++){ if(parts[i].type) map[parts[i].type]=parts[i].value; }
     return map.year + '-' + map.month + '-' + map.day + ' ' + map.hour + ':' + map.minute;
   } else {
-    var s = formatter.format(d); // e.g. "21/09/2025, 13:30"
+    var s = formatter.format(d);
     var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}).*?(\d{1,2}):(\d{2})/);
     if (m) {
       var day = pad(parseInt(m[1],10));
@@ -131,14 +136,17 @@ function formatInOslo(d) {
       var minute = m[5];
       return year + '-' + month + '-' + day + ' ' + hour + ':' + minute;
     }
-    // fallback to UTC-ish display (shouldn't happen on modern browsers)
     return d.getUTCFullYear() + '-' + pad(d.getUTCMonth()+1) + '-' + pad(d.getUTCDate()) + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
   }
 }
 
+/* countdown timer handle so we don't leak intervals */
+var countdownInterval = null;
+
 /* ---------- Load and render ---------- */
 function loadAndRender(){
   var scheduleDiv = document.getElementById('schedule');
+  var countdownDiv = document.getElementById('countdown');
   scheduleDiv.innerHTML = 'Loading schedule…';
   fetch('races.json', {cache:'no-store'}).then(function(resp){
     if(!resp.ok) throw new Error('Failed to fetch races.json: ' + resp.status);
@@ -159,7 +167,6 @@ function loadAndRender(){
           try { instant = localWallTimeToInstant(s.localDateTime, r.timezone); }
           catch(e) { instant = null; }
         }
-        // fallback: try Date parse (may be wrong without offset)
         if (!instant && s.localDateTime) {
           var d = new Date(s.localDateTime);
           if (!isNaN(d.getTime())) instant = d;
@@ -167,7 +174,6 @@ function loadAndRender(){
         instants.push({session:s, instant: instant});
       }
 
-      // find P1 and Race
       var p1i=null, racei=null;
       for (var k=0;k<instants.length;k++){
         var it = instants[k];
@@ -185,12 +191,30 @@ function loadAndRender(){
       }
     }
 
-    // sort upcoming/past by round if available
     upcoming.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
     past.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
 
+    // determine next race instant for countdown (earliest race session in upcoming)
+    var nextRaceInstant = null, nextRaceObj = null;
+    for (var u=0; u<upcoming.length; u++){
+      var candidate = upcoming[u];
+      var raceInstant = null;
+      for (var s=0; s<candidate.instants.length; s++){
+        var it = candidate.instants[s];
+        if (it.session && (it.session.type === 'race-event' || it.session.name === 'Race')) {
+          if (it.instant && it.instant > now) { raceInstant = it.instant; break; }
+        }
+      }
+      if (raceInstant) {
+        if (!nextRaceInstant || raceInstant < nextRaceInstant) {
+          nextRaceInstant = raceInstant; nextRaceObj = candidate.race;
+        }
+      }
+    }
+
     // render DOM
     scheduleDiv.innerHTML = '';
+
     function renderBlock(obj, cls, isHighlight) {
       var r = obj.race;
       var instants = obj.instants;
@@ -208,7 +232,7 @@ function loadAndRender(){
         var timeSpan = document.createElement('span'); timeSpan.className='session-time';
         var formatted = 'TBA';
         if (item.instant && !isNaN(item.instant.getTime())) formatted = formatInOslo(item.instant);
-        timeSpan.textContent = formatted;
+        timeSpan.textContent = formatted; // kept in DOM but hidden by CSS
         sessionDiv.appendChild(nameSpan);
         sessionDiv.appendChild(timeSpan);
         wrap.appendChild(sessionDiv);
@@ -220,19 +244,47 @@ function loadAndRender(){
     for (var u=0; u<upcoming.length; u++) renderBlock(upcoming[u], '');
     for (var p=0; p<past.length; p++) renderBlock(past[p], 'past');
 
-    // updated timestamp
+    // Updated timestamp
     var upd = document.getElementById('updated');
     upd.textContent = 'Last checked: ' + new Date().toLocaleString();
+
+    // Countdown rendering and interval
+    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+    if (nextRaceInstant && nextRaceObj) {
+      function updateCountdown(){
+        var now2 = new Date();
+        var diff = nextRaceInstant - now2;
+        if (diff <= 0) {
+          countdownDiv.textContent = 'Next race: ' + nextRaceObj.title + ' — starting now or finished';
+          clearInterval(countdownInterval); countdownInterval = null;
+          return;
+        }
+        var days = Math.floor(diff / (24*60*60*1000));
+        var hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+        var mins = Math.floor((diff % (60*60*1000)) / (60*1000));
+        var secs = Math.floor((diff % (60*1000)) / 1000);
+        var human = (days>0?days+'d ':'') + pad(hours)+':'+pad(mins)+':'+pad(secs);
+        var oslo = formatInOslo(nextRaceInstant);
+        countdownDiv.textContent = 'Next race: ' + nextRaceObj.title + ' — starts in ' + human + ' (Oslo: ' + oslo + ')';
+      }
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
+    } else {
+      countdownDiv.textContent = 'No upcoming races found.';
+    }
+
   }).catch(function(err){
     var scheduleDiv = document.getElementById('schedule');
     scheduleDiv.innerHTML = '<div class="error">Error loading schedule: ' + (err.message || err) + '</div>';
+    var countdownDiv = document.getElementById('countdown');
+    countdownDiv.textContent = 'Countdown unavailable';
     console.error(err);
   });
 }
 
 // initial
 loadAndRender();
-// refresh every minute
+// refresh every minute for schedule; countdown updates every second via its own interval
 setInterval(loadAndRender, 60000);
 </script>
 </body>
