@@ -6,7 +6,7 @@
 <style>
 /* Layout */
 html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-family:Arial,Helvetica,sans-serif;}
-.container{box-sizing:border-box;padding:5vh 1vh;max-width:420px;margin:0 auto;overflow:auto;height:100%;}
+.container{box-sizing:border-box;padding:0.6vh 1vh;max-width:420px;margin:0 auto;overflow:auto;height:100%;}
 
 /* Card */
 .race{
@@ -18,9 +18,9 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
   box-shadow:0 1px 0 rgba(0,0,0,0.25) inset;
 }
 
-/* Countdown - same look as cards; white text; same size as title */
+/* Countdown - matches .race look, white text, same size as title; remove extra top gap */
 .countdown{
-  margin:0.6vh 0 1vh 0;
+  margin:0 0 1vh 0;
   padding:0.8vh;
   border-radius:8px;
   background:rgba(255,255,255,0.03);
@@ -46,29 +46,18 @@ html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-fami
   line-height:1.1;
 }
 .session:last-child{border-bottom:none;}
-.session-left{display:flex;align-items:center;gap:0.6vh;}
+.session-left{display:flex;align-items:center;gap:0.8vh;}
 .session-name{color:#e8eef6;font-weight:600;display:flex;align-items:center;gap:0.6vh}
 .session-date{font-size:1.1vh;opacity:0.95;color:#ffffff;margin-left:0.4vh;min-width:5.2em;text-align:right;} /* white by default, right aligned area */
 
-/* Badge same background as card; only the text color indicates type */
-.badge{
-  display:inline-block;
-  padding:0.12vh 0.6vh;
-  border-radius:999px;
-  font-size:1.05vh;
-  margin-right:0.3vh;
-  font-weight:700;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  color:#ffffff; /* default white */
-}
+/* session-label: single text (no badge, no background). Default white. */
+.session-label{font-weight:700;font-size:1.5vh;color:#ffffff}
+/* Colors requested by user */
+.session-label--race, .session-label--sprint { color:#9C27B0; } /* purple */
+.session-label--qualifying { color:#FF9800; } /* orange */
+.session-label--practice { color:#ffffff; } /* white for P1/P2/P3 */
 
-/* Type colours: user requested purple for race & sprint, orange for qualifying, white for P1/P2/P3 */
-.badge--race, .badge--sprint { color:#9C27B0; }     /* purple */
-.badge--qualifying { color:#FF9800; }              /* orange */
-.badge--practice { color:#ffffff; }                /* white (P1/P2/P3) */
-
-/* Remove row tinting (keep cards uniform) */
+/* Remove any background tinting */
 .type-qualifying, .type-race-event, .type-sprint, .type-practice { background: none; }
 
 /* Past / current */
@@ -165,59 +154,32 @@ function formatDateInZone(d, tz) {
 
 /* derive canonical session label and short-type for colouring/semantics.
    Allowed labels shown to the user: P1, P2, P3, Qualifying (or 'Qual'), Sprint (the sprint), Sprint Qualifying (if present), Race.
-   Colour mapping:
-     - P1/P2/P3 -> white
-     - Qualifying / Sprint Qualifying -> orange
-     - Sprint / Race -> purple
 */
 function canonicalSessionInfo(session){
   var name = (session && session.name) ? session.name.toString() : '';
   var t = (session && session.type) ? session.type.toString() : '';
   var lower = name.toLowerCase();
-  var info = { label: name, badgeClass: 'badge--practice', typeClass: 'type-practice' };
+  var info = { label: name, short: name, style: 'practice', typeClass: 'type-practice' };
 
-  // P1/P2/P3 take precedence
-  if (/\bP1\b/i.test(name) || /^p1$/i.test(name)) { info.label = 'P1'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
-  if (/\bP2\b/i.test(name) || /^p2$/i.test(name)) { info.label = 'P2'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
-  if (/\bP3\b/i.test(name) || /^p3$/i.test(name)) { info.label = 'P3'; info.badgeClass='badge--practice'; info.typeClass='type-practice'; return info; }
+  if (/\bP1\b/i.test(name) || /^p1$/i.test(name)) { info.label = 'P1'; info.short='P1'; info.style='practice'; info.typeClass='type-practice'; return info; }
+  if (/\bP2\b/i.test(name) || /^p2$/i.test(name)) { info.label = 'P2'; info.short='P2'; info.style='practice'; info.typeClass='type-practice'; return info; }
+  if (/\bP3\b/i.test(name) || /^p3$/i.test(name)) { info.label = 'P3'; info.short='P3'; info.style='practice'; info.typeClass='type-practice'; return info; }
 
-  // Sprint qualifying (often named 'Sprint Qualifying' or 'Sprint Qual.') => treat as qualifying (orange)
   if (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') !== -1) {
-    info.label = 'Sprint Qualifying';
-    info.badgeClass = 'badge--qualifying';
-    info.typeClass = 'type-qualifying';
-    return info;
+    info.label = 'Sprint qualifying'; info.short='Sprint Qual'; info.style='qualifying'; info.typeClass='type-qualifying'; return info;
   }
-
-  // Sprint (the sprint race) - type 'sprint' or name contains 'sprint' (but not sprint-qual)
   if (t.toLowerCase() === 'sprint' || (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') === -1)) {
-    info.label = 'Sprint';
-    info.badgeClass = 'badge--sprint';
-    info.typeClass = 'type-sprint';
-    return info;
+    info.label = 'Sprint'; info.short='Sprint'; info.style='sprint'; info.typeClass='type-sprint'; return info;
   }
-
-  // Qualifying
   if (t.toLowerCase() === 'qualifying' || lower.indexOf('qual') !== -1) {
-    info.label = 'Qual';
-    info.badgeClass = 'badge--qualifying';
-    info.typeClass = 'type-qualifying';
-    return info;
+    info.label = 'Qualifying'; info.short='Qual'; info.style='qualifying'; info.typeClass='type-qualifying'; return info;
   }
-
-  // Race
   if (t.toLowerCase() === 'race-event' || lower.indexOf('race') !== -1) {
-    info.label = 'Race';
-    info.badgeClass = 'badge--race';
-    info.typeClass = 'type-race-event';
-    return info;
+    info.label = 'Race'; info.short='Race'; info.style='race'; info.typeClass='type-race-event'; return info;
   }
 
-  // Fallback: if it's a practice named differently but not P1/P2/P3, hide or treat as practice (white)
-  // We'll show the session.name as label but style as practice.
-  info.label = name || 'Session';
-  info.badgeClass = 'badge--practice';
-  info.typeClass = 'type-practice';
+  // fallback
+  info.label = name || 'Session'; info.short = info.label; info.style='practice'; info.typeClass='type-practice';
   return info;
 }
 
@@ -320,55 +282,35 @@ function loadAndRender(){
         var item = instants[s];
         var info = canonicalSessionInfo(item.session);
 
-        // only show the canonical sessions requested:
-        // P1, P2, P3, Qual (including Sprint Qualifying), Sprint, Race
-        // If session resolves to practice but is not P1/P2/P3, we still show it (fallback).
+        // build session row
         var sessionDiv = document.createElement('div');
         sessionDiv.className = 'session ' + info.typeClass;
 
         var left = document.createElement('div'); left.className = 'session-left';
-        var nameSpan = document.createElement('span'); nameSpan.className='session-name';
 
-        var badge = document.createElement('span'); badge.className='badge ' + (info.badgeClass || '');
-        // Simplify badge text:
-        var badgeText = info.label;
-        // Normalize labels
-        if (/^p1$/i.test(info.label)) badgeText = 'P1';
-        else if (/^p2$/i.test(info.label)) badgeText = 'P2';
-        else if (/^p3$/i.test(info.label)) badgeText = 'P3';
-        else if (/sprint\s*qual/i.test(info.label)) badgeText = 'Sprint Qual';
-        else if (/sprint/i.test(info.label) && !/qual/i.test(info.label)) badgeText = 'Sprint';
-        else if (/qual/i.test(info.label)) badgeText = 'Qual';
-        else if (/race/i.test(info.label)) badgeText = 'Race';
-        else badgeText = info.label;
+        // single label element only (no badge)
+        var labelSpan = document.createElement('span');
+        labelSpan.className = 'session-label session-label--' + info.style;
+        // choose text for canonical sessions
+        var labelText = info.label;
+        // normalize to the canonical words requested
+        if (/^P1$/i.test(info.short)) labelText = 'P1';
+        else if (/^P2$/i.test(info.short)) labelText = 'P2';
+        else if (/^P3$/i.test(info.short)) labelText = 'P3';
+        else if (/sprint\s*qual/i.test(info.short)) labelText = 'Sprint qualifying';
+        else if (/sprint/i.test(info.short) && !/qual/i.test(info.short)) labelText = 'Sprint';
+        else if (/qual/i.test(info.short)) labelText = 'Qualifying';
+        else if (/race/i.test(info.short)) labelText = 'Race';
+        else labelText = info.label;
 
-        badge.textContent = badgeText;
-        // label to show (avoid writing "Practice" when badge already covers it)
-        var labelText = '';
-        if (/^p1|p2|p3$/i.test(badgeText)) labelText = badgeText; // show P1/P2/P3
-        else if (badgeText === 'Qual' || badgeText === 'Sprint Qual' || badgeText === 'Sprint' || badgeText === 'Race') {
-          // Use friendly names
-          if (badgeText === 'Qual') labelText = 'Qualifying';
-          else if (badgeText === 'Sprint Qual') labelText = 'Sprint qualifying';
-          else labelText = badgeText;
-        } else {
-          // fallback to session.name (trim duplicates like 'Practice')
-          labelText = (item.session && item.session.name) ? item.session.name : badgeText;
-        }
+        labelSpan.textContent = labelText;
+        left.appendChild(labelSpan);
 
-        var label = document.createElement('span'); label.textContent = labelText;
-        nameSpan.appendChild(badge); nameSpan.appendChild(label);
-        left.appendChild(nameSpan);
-
-        // date on the right (only show if different from race date to avoid clutter) — but keep the right area for uniform alignment
+        // right side: show session date only if different from race date
         var dateSpan = document.createElement('div'); dateSpan.className = 'session-date';
         var sessionDateStr = item.instant ? formatDateInZone(item.instant, r.timezone) : '';
-        if (sessionDateStr && raceDateStr && sessionDateStr !== raceDateStr) {
-          dateSpan.textContent = sessionDateStr;
-        } else {
-          // keep empty string to preserve alignment and uniform look
-          dateSpan.textContent = '';
-        }
+        if (sessionDateStr && raceDateStr && sessionDateStr !== raceDateStr) dateSpan.textContent = sessionDateStr;
+        else dateSpan.textContent = '';
 
         sessionDiv.appendChild(left);
         sessionDiv.appendChild(dateSpan);
