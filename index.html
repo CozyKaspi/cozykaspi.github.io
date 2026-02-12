@@ -1,372 +1,517 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<meta charset="utf-8" />
-<title>F1 2026 Schedule — Oslo time (fixed)</title>
-<style>
-/* Layout */
-html,body{margin:0;padding:0;height:100%;background:#0d1b2a;color:#fff;font-family:Arial,Helvetica,sans-serif;}
-.container{box-sizing:border-box;padding:0.6vh 1vh;max-width:420px;margin:0 auto;overflow:auto;height:100%;}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>F1 2026 Schedule</title>
+    <style>
+      /* Layout */
+      html {
+        font-size: 16px;
+      }
 
-/* Card */
-.race{
-  margin:0.6vh 0;
-  padding:0.8vh;
-  border-radius:8px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  box-shadow:0 1px 0 rgba(0,0,0,0.25) inset;
-}
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        background: #0d1b2a;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+      }
 
-/* Countdown - matches .race look, white text, same size as title; remove extra top gap */
-.countdown{
-  margin:0 0 1vh 0;
-  padding:0.8vh;
-  border-radius:8px;
-  background:rgba(255,255,255,0.03);
-  border:1px solid rgba(255,255,255,0.06);
-  color:#fff;
-  font-weight:700;
-  text-align:center;
-  font-size:2.2vh; /* match .race-title */
-}
+      .container {
+        box-sizing: border-box;
+        padding: 8px 12px;
+        max-width: 420px;
+        margin: 0 auto;
+        overflow: auto;
+      }
 
-/* Title / meta */
-.race-title{font-weight:700;font-size:2.2vh;color:#ffffff;margin-bottom:0.35vh;}
-.race-meta{font-size:1.4vh;opacity:0.9;margin-bottom:0.6vh;color:#d6e1ea;}
+      /* Card */
+      .race {
+        margin: 8px 0;
+        padding: 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
 
-/* Sessions: left name, right date (uniform alignment) */
-.session{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:1.5vh;
-  padding:0.18vh 0;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-  line-height:1.1;
-}
-.session:last-child{border-bottom:none;}
-.session-left{display:flex;align-items:center;gap:0.8vh;}
-.session-name{color:#e8eef6;font-weight:600;display:flex;align-items:center;gap:0.6vh}
-.session-date{font-size:1.1vh;opacity:0.95;color:#ffffff;margin-left:0.4vh;min-width:5.2em;text-align:right;} /* white by default, right aligned area */
+      .race-content {
+        flex: 1;
+        min-width: 0;
+      }
 
-/* session-label: single text (no badge, no background). Default white. */
-.session-label{font-weight:700;font-size:1.5vh;color:#ffffff}
-/* Colors requested by user */
-.session-label--race, .session-label--sprint { color:#9C27B0; } /* purple */
-.session-label--qualifying { color:#FF9800; } /* orange */
-.session-label--practice { color:#ffffff; } /* white for P1/P2/P3 */
+      .race-image {
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+        border-radius: 6px;
+        object-fit: contain;
+        opacity: 0.8;
+        align-self: flex-end;
+      }
 
-/* Remove any background tinting */
-.type-qualifying, .type-race-event, .type-sprint, .type-practice { background: none; }
+      /* Countdown */
+      .countdown {
+        margin: 0 0 12px 0;
+        padding: 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        color: #fff;
+        font-weight: 700;
+        text-align: center;
+        font-size: 1.1rem;
+        line-height: 1.3;
+      }
 
-/* Past / current */
-.past{opacity:0.55;border-color:rgba(100,100,100,0.5);background:rgba(80,80,80,0.03);} 
-.highlight{border:0.28vh solid #ffeb3b;background:linear-gradient(0deg, rgba(255,250,200,0.03), rgba(255,250,200,0.015));}
+      /* Title / meta */
+      .race-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #ffffff;
+        margin-bottom: 4px;
+        line-height: 1.2;
+      }
 
-/* small footer */
-.footer{font-size:1.2vh;text-align:right;margin-top:1vh;opacity:0.8;color:#b9c4ce;}
-.error{color:#ff8a80;margin:1vh 0;}
-</style>
-</head>
-<body>
-<div class="container">
-  <div id="countdown" class="countdown">Loading next race countdown…</div>
-  <div id="schedule">Loading schedule…</div>
-</div>
-<div class="footer" id="updated"></div>
+      .race-meta {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        margin-bottom: 8px;
+        color: #d6e1ea;
+        line-height: 1.3;
+      }
 
-<script>
-// small helper
-function pad(n){ return (n<10?'0':'')+n; }
+      /* Sessions */
+      .session {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        font-size: 0.8rem;
+        padding: 2px 0;
+        line-height: 1.1;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
 
-var MONTH_ABBREV = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      .session:last-child {
+        border-bottom: none;
+      }
 
-// Safe function to get parts for a Date in a given IANA timezone.
-function getDatePartsForZone(dateObj, tz) {
-  var opts = { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false };
-  var formatter = new Intl.DateTimeFormat('en-GB', opts);
-  if (typeof formatter.formatToParts === 'function') {
-    var parts = formatter.formatToParts(dateObj);
-    var res = {};
-    for (var i=0;i<parts.length;i++){
-      var t = parts[i];
-      if (t.type) res[t.type] = t.value;
-    }
-    return { year:parseInt(res.year,10), month:parseInt(res.month,10), day:parseInt(res.day,10), hour:parseInt(res.hour,10), minute:parseInt(res.minute,10), second:parseInt(res.second,10) };
-  } else {
-    var s = formatter.format(dateObj);
-    var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}).*?(\d{1,2}):(\d{2}):?(\d{2})?/);
-    if (m) {
-      return { year:parseInt(m[3],10), month:parseInt(m[2],10), day:parseInt(m[1],10), hour:parseInt(m[4],10), minute:parseInt(m[5],10), second:parseInt(m[6]||'0',10) };
-    } else {
-      return { year:dateObj.getUTCFullYear(), month:dateObj.getUTCMonth()+1, day:dateObj.getUTCDate(), hour:dateObj.getUTCHours(), minute:dateObj.getUTCMinutes(), second:dateObj.getUTCSeconds() };
-    }
-  }
-}
+      .session-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 90px;
+      }
 
-function localWallTimeToInstant(localIsoNoOffset, tz) {
-  if (!localIsoNoOffset || !tz) return null;
-  var parts = localIsoNoOffset.split(/[:T-]/).map(function(x){return parseInt(x,10);});
-  if (parts.length < 3 || isNaN(parts[0])) return null;
-  var year = parts[0], month = parts[1], day = parts[2], hour = parts[3]||0, minute = parts[4]||0, second = parts[5]||0;
-  var approx = Date.UTC(year, month-1, day, hour, minute, second);
-  var formattedParts = getDatePartsForZone(new Date(approx), tz);
-  var approxWallMillis = Date.UTC(formattedParts.year, formattedParts.month-1, formattedParts.day, formattedParts.hour, formattedParts.minute, formattedParts.second);
-  var diff = approx - approxWallMillis;
-  var desiredWallUtc = Date.UTC(year, month-1, day, hour, minute, second);
-  var epoch = desiredWallUtc - diff;
-  return new Date(epoch);
-}
+      .session-date {
+        font-size: 0.85rem;
+        opacity: 0.95;
+        color: #ffffff;
+        margin-left: 6px;
+        text-align: left;
+      }
 
-// Format instant into Oslo local string "D Mmm HH:MM" (no leading zero on day)
-function formatInOslo(d) {
-  if (!d || isNaN(d.getTime())) return 'TBA';
-  var opts = { timeZone: 'Europe/Oslo', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false };
-  var formatter = new Intl.DateTimeFormat('en-GB', opts);
-  if (typeof formatter.formatToParts === 'function') {
-    var parts = formatter.formatToParts(d);
-    var map = {};
-    for (var i=0;i<parts.length;i++){ if(parts[i].type) map[parts[i].type]=parts[i].value; }
-    var dayNum = parseInt(map.day,10).toString(); // no leading zero
-    var month = MONTH_ABBREV[parseInt(map.month,10)-1];
-    return dayNum + ' ' + month + ' ' + map.hour + ':' + map.minute;
-  } else {
-    var s = formatter.format(d);
-    var m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}).*?(\d{1,2}):(\d{2})/);
-    if (m) {
-      var dayNum = parseInt(m[1],10).toString();
-      var month = MONTH_ABBREV[parseInt(m[2],10)-1];
-      var hour = pad(parseInt(m[3],10));
-      var minute = m[4];
-      return dayNum + ' ' + month + ' ' + hour + ':' + minute;
-    }
-    return (d.getUTCDate()) + ' ' + MONTH_ABBREV[d.getUTCMonth()] + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
-  }
-}
+      /* session-label colors */
+      .session-label {
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: #ffffff;
+        white-space: nowrap;
+      }
 
-// Format date in timezone as "D Mmm" (no leading zero)
-function formatDateInZone(d, tz) {
-  if (!d || !tz) return '';
-  var p = getDatePartsForZone(d, tz);
-  return parseInt(p.day,10).toString() + ' ' + MONTH_ABBREV[p.month-1];
-}
+      .session-label--race,
+      .session-label--sprint {
+        color: #9c27b0;
+      }
 
-/* derive canonical session label and short-type for colouring/semantics.
-   Allowed labels shown to the user: P1, P2, P3, Qualifying (or 'Qual'), Sprint (the sprint), Sprint Qualifying (if present), Race.
-*/
-function canonicalSessionInfo(session){
-  var name = (session && session.name) ? session.name.toString() : '';
-  var t = (session && session.type) ? session.type.toString() : '';
-  var lower = name.toLowerCase();
-  var info = { label: name, short: name, style: 'practice', typeClass: 'type-practice' };
+      .session-label--qualifying {
+        color: #ff9800;
+      }
 
-  if (/\bP1\b/i.test(name) || /^p1$/i.test(name)) { info.label = 'P1'; info.short='P1'; info.style='practice'; info.typeClass='type-practice'; return info; }
-  if (/\bP2\b/i.test(name) || /^p2$/i.test(name)) { info.label = 'P2'; info.short='P2'; info.style='practice'; info.typeClass='type-practice'; return info; }
-  if (/\bP3\b/i.test(name) || /^p3$/i.test(name)) { info.label = 'P3'; info.short='P3'; info.style='practice'; info.typeClass='type-practice'; return info; }
+      .session-label--practice {
+        color: #ffffff;
+      }
 
-  if (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') !== -1) {
-    info.label = 'Sprint qualifying'; info.short='Sprint Qual'; info.style='qualifying'; info.typeClass='type-qualifying'; return info;
-  }
-  if (t.toLowerCase() === 'sprint' || (lower.indexOf('sprint') !== -1 && lower.indexOf('qual') === -1)) {
-    info.label = 'Sprint'; info.short='Sprint'; info.style='sprint'; info.typeClass='type-sprint'; return info;
-  }
-  if (t.toLowerCase() === 'qualifying' || lower.indexOf('qual') !== -1) {
-    info.label = 'Qualifying'; info.short='Qual'; info.style='qualifying'; info.typeClass='type-qualifying'; return info;
-  }
-  if (t.toLowerCase() === 'race-event' || lower.indexOf('race') !== -1) {
-    info.label = 'Race'; info.short='Race'; info.style='race'; info.typeClass='type-race-event'; return info;
-  }
+      /* Past / current */
+      .past {
+        opacity: 0.55;
+        border-color: rgba(100, 100, 100, 0.5);
+        background: rgba(80, 80, 80, 0.03);
+      }
 
-  // fallback
-  info.label = name || 'Session'; info.short = info.label; info.style='practice'; info.typeClass='type-practice';
-  return info;
-}
+      .highlight {
+        border: 3px solid #ffeb3b;
+        background: linear-gradient(
+          0deg,
+          rgba(255, 250, 200, 0.03),
+          rgba(255, 250, 200, 0.015)
+        );
+      }
 
-/* ---------- Load and render ---------- */
-var countdownInterval = null;
-function loadAndRender(){
-  var scheduleDiv = document.getElementById('schedule');
-  var countdownDiv = document.getElementById('countdown');
-  scheduleDiv.innerHTML = 'Loading schedule…';
-  fetch('races.json', {cache:'no-store'}).then(function(resp){
-    if(!resp.ok) throw new Error('Failed to fetch races.json: ' + resp.status);
-    return resp.json();
-  }).then(function(data){
-    var now = new Date();
-    var past = [], upcoming = [], current = null;
+      /* small footer */
+      .footer {
+        font-size: 0.7rem;
+        text-align: right;
+        margin-top: 12px;
+        padding-bottom: 12px;
+        opacity: 0.8;
+        color: #b9c4ce;
+      }
 
-    for (var i=0;i<data.length;i++){
-      var r = data[i];
-      var instants = [];
-      if (!r.sessions || !Array.isArray(r.sessions)) r.sessions = [];
-      for (var j=0;j<r.sessions.length;j++){
-        var s = r.sessions[j];
-        var instant = null;
-        if (s.localDateTime && r.timezone) {
-          try { instant = localWallTimeToInstant(s.localDateTime, r.timezone); }
-          catch(e) { instant = null; }
+      .error {
+        color: #ff8a80;
+        margin: 12px 0;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 380px) {
+        .container {
+          padding: 6px 8px;
         }
-        if (!instant && s.localDateTime) {
-          var d = new Date(s.localDateTime);
-          if (!isNaN(d.getTime())) instant = d;
+
+        .race {
+          padding: 8px;
+          gap: 10px;
         }
-        instants.push({session:s, instant: instant});
-      }
 
-      var p1i=null, racei=null;
-      for (var k=0;k<instants.length;k++){
-        var it = instants[k];
-        if (it.session && it.session.name === 'P1') p1i = it.instant;
-        if (it.session && (it.session.type === 'race-event' || it.session.name === 'Race')) racei = it.instant;
-      }
+        .race-image {
+          width: 100px;
+          height: 100px;
+        }
 
-      if (p1i && racei) {
-        var raceEndBuffer = new Date(racei.getTime() + 2*60*60*1000);
-        if (now >= p1i && now <= raceEndBuffer) current = {race:r, instants:instants};
-        else if (now < p1i) upcoming.push({race:r, instants:instants});
-        else past.push({race:r, instants:instants});
-      } else {
-        upcoming.push({race:r, instants:instants});
-      }
-    }
+        .race-title {
+          font-size: 1rem;
+        }
 
-    upcoming.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
-    past.sort(function(a,b){ return (a.race.round||0) - (b.race.round||0); });
+        .countdown {
+          font-size: 1rem;
+          padding: 8px;
+        }
 
-    // determine next race instant for countdown (earliest race session in upcoming)
-    var nextRaceInstant = null, nextRaceObj = null;
-    for (var u=0; u<upcoming.length; u++){
-      var candidate = upcoming[u];
-      var raceInstant = null;
-      for (var s=0; s<candidate.instants.length; s++){
-        var it = candidate.instants[s];
-        if (it.session && (it.session.type === 'race-event' || it.session.name === 'Race')) {
-          if (it.instant && it.instant > now) { raceInstant = it.instant; break; }
+        .session-left {
+          min-width: 80px;
         }
       }
-      if (raceInstant) {
-        if (!nextRaceInstant || raceInstant < nextRaceInstant) {
-          nextRaceInstant = raceInstant; nextRaceObj = candidate.race;
+
+      @media (min-width: 600px) {
+        html {
+          font-size: 18px;
+        }
+
+        .race-image {
+          width: 140px;
+          height: 140px;
         }
       }
-    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="countdown" class="countdown">Loading next race countdown…</div>
+      <div id="schedule">Loading schedule…</div>
+      <div class="footer" id="updated"></div>
+    </div>
 
-    // render DOM
-    scheduleDiv.innerHTML = '';
-    function stripYearFromDatesString(datesStr) {
-      if (!datesStr || typeof datesStr !== 'string') return datesStr || '';
-      return datesStr.replace(/,?\s*\b\d{4}\b/g, '').trim();
-    }
-
-    function renderBlock(obj, cls, isHighlight) {
-      var r = obj.race;
-      var instants = obj.instants;
-
-      // compute race date string (D Mmm) in race timezone (use race session if present)
-      var raceInstant = null;
-      for(var i=0;i<instants.length;i++){
-        var it = instants[i];
-        if(it.session && (it.session.type==='race-event' || it.session.name==='Race')) { raceInstant = it.instant; break; }
-      }
-      var raceDateStr = raceInstant ? formatDateInZone(raceInstant, r.timezone) : '';
-
-      var wrap = document.createElement('div');
-      wrap.className = 'race' + (cls ? ' '+cls : '') + (isHighlight ? ' highlight' : '');
-      var title = document.createElement('div'); title.className = 'race-title'; title.textContent = r.title;
-      var meta = document.createElement('div'); meta.className = 'race-meta';
-      meta.textContent = r.location + ' • ' + r.track + ' • ' + stripYearFromDatesString(r.dates || '');
-      wrap.appendChild(title); wrap.appendChild(meta);
-
-      for (var s=0;s<instants.length;s++){
-        var item = instants[s];
-        var info = canonicalSessionInfo(item.session);
-
-        // build session row
-        var sessionDiv = document.createElement('div');
-        sessionDiv.className = 'session ' + info.typeClass;
-
-        var left = document.createElement('div'); left.className = 'session-left';
-
-        // single label element only (no badge)
-        var labelSpan = document.createElement('span');
-        labelSpan.className = 'session-label session-label--' + info.style;
-        // choose text for canonical sessions
-        var labelText = info.label;
-        // normalize to the canonical words requested
-        if (/^P1$/i.test(info.short)) labelText = 'P1';
-        else if (/^P2$/i.test(info.short)) labelText = 'P2';
-        else if (/^P3$/i.test(info.short)) labelText = 'P3';
-        else if (/sprint\s*qual/i.test(info.short)) labelText = 'Sprint qualifying';
-        else if (/sprint/i.test(info.short) && !/qual/i.test(info.short)) labelText = 'Sprint';
-        else if (/qual/i.test(info.short)) labelText = 'Qualifying';
-        else if (/race/i.test(info.short)) labelText = 'Race';
-        else labelText = info.label;
-
-        labelSpan.textContent = labelText;
-        left.appendChild(labelSpan);
-
-        // right side: show session date only if different from race date
-        var dateSpan = document.createElement('div'); dateSpan.className = 'session-date';
-        var sessionDateStr = item.instant ? formatDateInZone(item.instant, r.timezone) : '';
-        if (sessionDateStr && raceDateStr && sessionDateStr !== raceDateStr) dateSpan.textContent = sessionDateStr;
-        else dateSpan.textContent = '';
-
-        sessionDiv.appendChild(left);
-        sessionDiv.appendChild(dateSpan);
-        wrap.appendChild(sessionDiv);
+    <script>
+      // Helper to pad numbers with leading zero
+      function pad(n) {
+        return (n < 10 ? "0" : "") + n;
       }
 
-      scheduleDiv.appendChild(wrap);
-    }
+      var MONTH_ABBREV = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
 
-    // Render current first, then upcoming, then past
-    if (current) renderBlock(current, '', true);
-    for (var u=0; u<upcoming.length; u++) renderBlock(upcoming[u], '');
-    for (var p=0; p<past.length; p++) renderBlock(past[p], 'past');
+      // Format date as "8 Mar"
+      function formatDateTime(dateStr) {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "TBA";
 
-    // updated timestamp
-    var upd = document.getElementById('updated');
-    upd.textContent = 'Last checked: ' + new Date().toLocaleString();
+        var day = d.getDate();
+        var month = MONTH_ABBREV[d.getMonth()];
 
-    // Countdown handling
-    if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-    if (nextRaceInstant && nextRaceObj) {
-      function updateCountdown(){
-        var now2 = new Date();
-        var diff = nextRaceInstant - now2;
-        if (diff <= 0) {
-          countdownDiv.textContent = 'Next race: ' + nextRaceObj.title + ' — starting now or finished';
-          clearInterval(countdownInterval); countdownInterval = null;
-          return;
-        }
-        var days = Math.floor(diff / (24*60*60*1000));
-        var hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
-        var mins = Math.floor((diff % (60*60*1000)) / (60*1000));
-        var secs = Math.floor((diff % (60*1000)) / 1000);
-        var human = (days>0?days+'d ':'') + pad(hours)+':'+pad(mins)+':'+pad(secs);
-        var oslo = formatInOslo(nextRaceInstant);
-        countdownDiv.textContent = 'Next race: ' + nextRaceObj.title + ' — starts in ' + human + ' (Oslo: ' + oslo + ')';
+        return day + " " + month;
       }
-      updateCountdown();
-      countdownInterval = setInterval(updateCountdown, 1000);
-    } else {
-      countdownDiv.textContent = 'No upcoming races found.';
-    }
 
-  }).catch(function(err){
-    var scheduleDiv = document.getElementById('schedule');
-    scheduleDiv.innerHTML = '<div class="error">Error loading schedule: ' + (err.message || err) + '</div>';
-    var countdownDiv = document.getElementById('countdown');
-    countdownDiv.textContent = 'Countdown unavailable';
-    console.error(err);
-  });
-}
+      // Determine session type and style
+      function getSessionInfo(session) {
+        var name = session.name.toLowerCase();
 
-// initial
-loadAndRender();
-// refresh every minute for schedule; countdown updates every second via its own interval
-setInterval(loadAndRender, 60000);
-</script>
-</body>
+        if (name === "p1") return { label: "P1", style: "practice" };
+        if (name === "p2") return { label: "P2", style: "practice" };
+        if (name === "p3") return { label: "P3", style: "practice" };
+        if (name === "sprint qualifying")
+          return { label: "Sprint Q", style: "qualifying" };
+        if (name === "sprint") return { label: "Sprint", style: "sprint" };
+        if (name === "qualifying")
+          return { label: "Qualifying", style: "qualifying" };
+        if (name === "race") return { label: "Race", style: "race" };
+
+        return { label: session.name, style: "practice" };
+      }
+
+      // Strip year from date string
+      function stripYear(dateStr) {
+        return dateStr.replace(/,?\s*\b\d{4}\b/g, "").trim();
+      }
+
+      // Get track image filename based on track name
+      function getTrackImage(track) {
+        // Map track names to image filenames
+        var trackImages = {
+          "Albert Park Circuit": "melbourne.avif",
+          "Shanghai International Circuit": "shanghai.avif",
+          "Suzuka Circuit": "suzuka.avif",
+          "Bahrain International Circuit": "bahrain.avif",
+          "Jeddah Corniche Circuit": "jeddah.avif",
+          "Miami International Autodrome": "miami.avif",
+          "Circuit Gilles Villeneuve": "montreal.avif",
+          "Circuit de Monaco": "monaco.avif",
+          "Circuit de Barcelona-Catalunya": "barcelona.avif",
+          "Red Bull Ring": "austria.avif",
+          "Silverstone Circuit": "silverstone.avif",
+          "Circuit de Spa-Francorchamps": "spa.avif",
+          Hungaroring: "hungary.avif",
+          "Circuit Zandvoort": "zandvoort.avif",
+          "Autodromo Nazionale Monza": "monza.avif",
+          "Madrid Street Circuit": "madrid.avif",
+          "Baku City Circuit": "baku.avif",
+          "Marina Bay Street Circuit": "singapore.avif",
+          "Circuit of the Americas": "austin.avif",
+          "Autódromo Hermanos Rodríguez": "mexico.avif",
+          "Autódromo José Carlos Pace": "brazil.avif",
+          "Las Vegas Street Circuit": "lasvegas.avif",
+          "Lusail International Circuit": "qatar.avif",
+          "Yas Marina Circuit": "abudhabi.avif",
+        };
+
+        return trackImages[track] || null;
+      }
+
+      var countdownInterval = null;
+
+      function loadAndRender() {
+        var scheduleDiv = document.getElementById("schedule");
+        var countdownDiv = document.getElementById("countdown");
+        scheduleDiv.innerHTML = "Loading schedule…";
+
+        fetch("races.json", { cache: "no-store" })
+          .then(function (resp) {
+            if (!resp.ok) throw new Error("Failed to fetch races.json");
+            return resp.json();
+          })
+          .then(function (races) {
+            var now = new Date();
+            var past = [];
+            var upcoming = [];
+            var current = null;
+
+            // Categorize races
+            for (var i = 0; i < races.length; i++) {
+              var race = races[i];
+
+              // Find P1 and Race times
+              var p1Time = null;
+              var raceTime = null;
+
+              for (var j = 0; j < race.sessions.length; j++) {
+                var s = race.sessions[j];
+                if (s.name === "P1") p1Time = new Date(s.localDateTime);
+                if (s.name === "Race") raceTime = new Date(s.localDateTime);
+              }
+
+              if (p1Time && raceTime) {
+                var raceEnd = new Date(raceTime.getTime() + 2 * 60 * 60 * 1000);
+
+                if (now >= p1Time && now <= raceEnd) {
+                  current = race;
+                } else if (now < p1Time) {
+                  upcoming.push(race);
+                } else {
+                  past.push(race);
+                }
+              } else {
+                upcoming.push(race);
+              }
+            }
+
+            // Find next race for countdown
+            var nextRace = null;
+            var nextRaceTime = null;
+
+            for (var i = 0; i < upcoming.length; i++) {
+              for (var j = 0; j < upcoming[i].sessions.length; j++) {
+                var s = upcoming[i].sessions[j];
+                if (s.name === "Race") {
+                  var raceTime = new Date(s.localDateTime);
+                  if (!nextRaceTime || raceTime < nextRaceTime) {
+                    nextRaceTime = raceTime;
+                    nextRace = upcoming[i];
+                  }
+                  break;
+                }
+              }
+            }
+
+            // Render races
+            scheduleDiv.innerHTML = "";
+
+            function renderRace(race, isPast, isHighlight) {
+              var wrap = document.createElement("div");
+              wrap.className =
+                "race" +
+                (isPast ? " past" : "") +
+                (isHighlight ? " highlight" : "");
+
+              var content = document.createElement("div");
+              content.className = "race-content";
+
+              var title = document.createElement("div");
+              title.className = "race-title";
+              title.textContent = race.title;
+
+              var meta = document.createElement("div");
+              meta.className = "race-meta";
+              meta.textContent =
+                race.location +
+                " • " +
+                race.track +
+                " • " +
+                stripYear(race.dates);
+
+              content.appendChild(title);
+              content.appendChild(meta);
+
+              // Render sessions
+              for (var j = 0; j < race.sessions.length; j++) {
+                var session = race.sessions[j];
+                var info = getSessionInfo(session);
+
+                var sessionDiv = document.createElement("div");
+                sessionDiv.className = "session";
+
+                var left = document.createElement("div");
+                left.className = "session-left";
+
+                var label = document.createElement("span");
+                label.className = "session-label session-label--" + info.style;
+                label.textContent = info.label;
+
+                left.appendChild(label);
+
+                var dateSpan = document.createElement("div");
+                dateSpan.className = "session-date";
+                dateSpan.textContent = formatDateTime(session.localDateTime);
+
+                sessionDiv.appendChild(left);
+                sessionDiv.appendChild(dateSpan);
+                content.appendChild(sessionDiv);
+              }
+
+              wrap.appendChild(content);
+
+              // Add track image if available
+              var imageName = getTrackImage(race.track);
+              if (imageName) {
+                var img = document.createElement("img");
+                img.className = "race-image";
+                img.src = "tracks/" + imageName;
+                img.alt = race.track;
+                img.onerror = function () {
+                  this.style.display = "none";
+                };
+                wrap.appendChild(img);
+              }
+
+              scheduleDiv.appendChild(wrap);
+            }
+
+            // Render in order: current, upcoming, past
+            if (current) renderRace(current, false, true);
+            for (var i = 0; i < upcoming.length; i++)
+              renderRace(upcoming[i], false, false);
+            for (var i = 0; i < past.length; i++)
+              renderRace(past[i], true, false);
+
+            // Update timestamp
+            document.getElementById("updated").textContent =
+              "Last checked: " + new Date().toLocaleString();
+
+            // Setup countdown
+            if (countdownInterval) {
+              clearInterval(countdownInterval);
+              countdownInterval = null;
+            }
+
+            if (nextRaceTime && nextRace) {
+              function updateCountdown() {
+                var now = new Date();
+                var diff = nextRaceTime - now;
+
+                if (diff <= 0) {
+                  countdownDiv.textContent =
+                    "Next race: " +
+                    nextRace.title +
+                    " starting now or finished";
+                  clearInterval(countdownInterval);
+                  return;
+                }
+
+                var days = Math.floor(diff / (24 * 60 * 60 * 1000));
+                var hours = Math.floor(
+                  (diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000),
+                );
+                var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+                var secs = Math.floor((diff % (60 * 1000)) / 1000);
+
+                var timeStr =
+                  (days > 0 ? days + "d " : "") +
+                  pad(hours) +
+                  ":" +
+                  pad(mins) +
+                  ":" +
+                  pad(secs);
+
+                countdownDiv.textContent =
+                  "Next race: " + nextRace.title + " starts in " + timeStr;
+              }
+
+              updateCountdown();
+              countdownInterval = setInterval(updateCountdown, 1000);
+            } else {
+              countdownDiv.textContent = "No upcoming races found.";
+            }
+          })
+          .catch(function (err) {
+            scheduleDiv.innerHTML =
+              '<div class="error">Error loading schedule: ' +
+              err.message +
+              "</div>";
+            countdownDiv.textContent = "Countdown unavailable";
+            console.error(err);
+          });
+      }
+
+      // Initial load and auto-refresh every minute
+      loadAndRender();
+      setInterval(loadAndRender, 60000);
+    </script>
+  </body>
 </html>
