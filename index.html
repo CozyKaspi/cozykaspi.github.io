@@ -307,17 +307,49 @@
 
       var countdownInterval = null;
 
+      // ES5 XMLHttpRequest fallback for old browsers
+      function fetchJSON(url, successCallback, errorCallback) {
+        if (typeof fetch !== "undefined") {
+          // Modern browsers
+          fetch(url + "?_=" + new Date().getTime())
+            .then(function (response) {
+              if (!response.ok) {
+                throw new Error("HTTP error " + response.status);
+              }
+              return response.json();
+            })
+            .then(successCallback)
+            .catch(errorCallback);
+        } else {
+          // Old browsers - use XMLHttpRequest
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", url + "?_=" + new Date().getTime(), true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                try {
+                  var data = JSON.parse(xhr.responseText);
+                  successCallback(data);
+                } catch (e) {
+                  errorCallback(e);
+                }
+              } else {
+                errorCallback(new Error("Failed to load: " + xhr.status));
+              }
+            }
+          };
+          xhr.send();
+        }
+      }
+
       function loadAndRender() {
         var scheduleDiv = document.getElementById("schedule");
         var countdownDiv = document.getElementById("countdown");
         scheduleDiv.innerHTML = "Loading schedule…";
 
-        fetch("races.json", { cache: "no-store" })
-          .then(function (resp) {
-            if (!resp.ok) throw new Error("Failed to fetch races.json");
-            return resp.json();
-          })
-          .then(function (races) {
+        fetchJSON(
+          "races.json",
+          function (races) {
             var now = new Date();
             var past = [];
             var upcoming = [];
@@ -498,15 +530,18 @@
             } else {
               countdownDiv.textContent = "No upcoming races found.";
             }
-          })
-          .catch(function (err) {
+          },
+          function (err) {
             scheduleDiv.innerHTML =
               '<div class="error">Error loading schedule: ' +
               err.message +
               "</div>";
             countdownDiv.textContent = "Countdown unavailable";
-            console.error(err);
-          });
+            if (typeof console !== "undefined" && console.error) {
+              console.error(err);
+            }
+          },
+        );
       }
 
       // Initial load and auto-refresh every minute
