@@ -3,6 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <title>F1 2026 Schedule</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       /* Layout */
       html,
@@ -35,13 +37,13 @@
         gap: 1vh;
         flex-wrap: wrap;
       }
-
+      
       .race-content {
         flex: 1;
         min-width: 0;
         order: 1;
       }
-
+      
       .race-image {
         width: 10vh;
         height: 10vh;
@@ -163,62 +165,40 @@
     <div class="footer" id="updated"></div>
 
     <script>
-      // Helper to pad numbers with leading zero
       function pad(n) {
         return (n < 10 ? "0" : "") + n;
       }
 
       var MONTH_ABBREV = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
       ];
 
-      // Format date as "8 Mar"
       function formatDateTime(dateStr) {
         var d = new Date(dateStr);
         if (isNaN(d.getTime())) return "TBA";
-
         var day = d.getDate();
         var month = MONTH_ABBREV[d.getMonth()];
-
         return day + " " + month;
       }
 
-      // Determine session type and style
       function getSessionInfo(session) {
         var name = session.name.toLowerCase();
-
         if (name === "p1") return { label: "P1", style: "practice" };
         if (name === "p2") return { label: "P2", style: "practice" };
         if (name === "p3") return { label: "P3", style: "practice" };
-        if (name === "sprint qualifying")
-          return { label: "Sprint Q", style: "qualifying" };
+        if (name === "sprint qualifying") return { label: "Sprint Q", style: "qualifying" };
         if (name === "sprint") return { label: "Sprint", style: "sprint" };
-        if (name === "qualifying")
-          return { label: "Qualifying", style: "qualifying" };
+        if (name === "qualifying") return { label: "Qualifying", style: "qualifying" };
         if (name === "race") return { label: "Race", style: "race" };
-
         return { label: session.name, style: "practice" };
       }
 
-      // Strip year from date string
       function stripYear(dateStr) {
         return dateStr.replace(/,?\s*\b\d{4}\b/g, "").trim();
       }
 
-      // Get track image filename based on track name
       function getTrackImage(track) {
-        // Map track names to image filenames
         var trackImages = {
           "Albert Park Circuit": "melbourne.avif",
           "Shanghai International Circuit": "shanghai.avif",
@@ -232,7 +212,7 @@
           "Red Bull Ring": "austria.avif",
           "Silverstone Circuit": "silverstone.avif",
           "Circuit de Spa-Francorchamps": "spa.avif",
-          Hungaroring: "hungary.avif",
+          "Hungaroring": "hungary.avif",
           "Circuit Zandvoort": "zandvoort.avif",
           "Autodromo Nazionale Monza": "monza.avif",
           "Madrid Street Circuit": "madrid.avif",
@@ -243,62 +223,23 @@
           "Autódromo José Carlos Pace": "brazil.avif",
           "Las Vegas Street Circuit": "lasvegas.avif",
           "Lusail International Circuit": "qatar.avif",
-          "Yas Marina Circuit": "abudhabi.avif",
+          "Yas Marina Circuit": "abudhabi.avif"
         };
-
         return trackImages[track] || null;
       }
 
       var countdownInterval = null;
 
-      function loadAndRender() {
+      function renderSchedule(races) {
         var scheduleDiv = document.getElementById("schedule");
         var countdownDiv = document.getElementById("countdown");
-        scheduleDiv.innerHTML = "Loading schedule…";
-
-        // Use XMLHttpRequest instead of fetch for ECMA5 compatibility
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "races.json", true);
-        xhr.onload = function () {
-          if (xhr.status === 200) {
-            try {
-              var races = JSON.parse(xhr.responseText);
-              renderSchedule(races, scheduleDiv, countdownDiv);
-            } catch (e) {
-              scheduleDiv.innerHTML =
-                '<div class="error">Error parsing schedule: ' +
-                e.message +
-                "</div>";
-              countdownDiv.textContent = "Countdown unavailable";
-              console.error(e);
-            }
-          } else {
-            scheduleDiv.innerHTML =
-              '<div class="error">Failed to fetch races.json (Status: ' +
-              xhr.status +
-              ")</div>";
-            countdownDiv.textContent = "Countdown unavailable";
-          }
-        };
-        xhr.onerror = function () {
-          scheduleDiv.innerHTML =
-            '<div class="error">Error loading schedule: Network error</div>';
-          countdownDiv.textContent = "Countdown unavailable";
-        };
-        xhr.send();
-      }
-
-      function renderSchedule(races, scheduleDiv, countdownDiv) {
         var now = new Date();
         var past = [];
         var upcoming = [];
         var current = null;
 
-        // Categorize races
         for (var i = 0; i < races.length; i++) {
           var race = races[i];
-
-          // Find P1 and Race times
           var p1Time = null;
           var raceTime = null;
 
@@ -310,7 +251,6 @@
 
           if (p1Time && raceTime) {
             var raceEnd = new Date(raceTime.getTime() + 2 * 60 * 60 * 1000);
-
             if (now >= p1Time && now <= raceEnd) {
               current = race;
             } else if (now < p1Time) {
@@ -323,7 +263,6 @@
           }
         }
 
-        // Find next race for countdown
         var nextRace = null;
         var nextRaceTime = null;
 
@@ -341,7 +280,6 @@
           }
         }
 
-        // Render races
         scheduleDiv.innerHTML = "";
 
         function renderRace(race, isPast, isHighlight) {
@@ -360,13 +298,11 @@
 
           var meta = document.createElement("div");
           meta.className = "race-meta";
-          meta.textContent =
-            race.location + " • " + race.track + " • " + stripYear(race.dates);
+          meta.textContent = race.location + " • " + race.track + " • " + stripYear(race.dates);
 
           content.appendChild(title);
           content.appendChild(meta);
 
-          // Render sessions
           for (var j = 0; j < race.sessions.length; j++) {
             var session = race.sessions[j];
             var info = getSessionInfo(session);
@@ -394,15 +330,14 @@
 
           wrap.appendChild(content);
 
-          // Add track image if available
           var imageName = getTrackImage(race.track);
           if (imageName) {
             var img = document.createElement("img");
             img.className = "race-image";
             img.src = "tracks/" + imageName;
             img.alt = race.track;
-            img.onerror = function () {
-              this.style.display = "none";
+            img.onerror = function() {
+              this.style.display = 'none';
             };
             wrap.appendChild(img);
           }
@@ -410,20 +345,14 @@
           scheduleDiv.appendChild(wrap);
         }
 
-        // Render in order: current, upcoming, past
         if (current) renderRace(current, false, true);
-        for (var i = 0; i < upcoming.length; i++)
-          renderRace(upcoming[i], false, false);
+        for (var i = 0; i < upcoming.length; i++) renderRace(upcoming[i], false, false);
         for (var i = 0; i < past.length; i++) renderRace(past[i], true, false);
 
-        // Update timestamp
-        document.getElementById("updated").textContent =
-          "Last checked: " + new Date().toLocaleString();
+        document.getElementById("updated").textContent = "Last checked: " + new Date().toLocaleString();
 
-        // Setup countdown
         if (countdownInterval) {
           clearInterval(countdownInterval);
-          countdownInterval = null;
         }
 
         if (nextRaceTime && nextRace) {
@@ -432,29 +361,17 @@
             var diff = nextRaceTime - now;
 
             if (diff <= 0) {
-              countdownDiv.textContent =
-                "Next race: " + nextRace.title + " starting now or finished";
-              clearInterval(countdownInterval);
+              countdownDiv.textContent = "Next race: " + nextRace.title + " starting now or finished";
               return;
             }
 
             var days = Math.floor(diff / (24 * 60 * 60 * 1000));
-            var hours = Math.floor(
-              (diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000),
-            );
+            var hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
             var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
             var secs = Math.floor((diff % (60 * 1000)) / 1000);
 
-            var timeStr =
-              (days > 0 ? days + "d " : "") +
-              pad(hours) +
-              ":" +
-              pad(mins) +
-              ":" +
-              pad(secs);
-
-            countdownDiv.textContent =
-              "Next race: " + nextRace.title + " starts in " + timeStr;
+            var timeStr = (days > 0 ? days + "d " : "") + pad(hours) + ":" + pad(mins) + ":" + pad(secs);
+            countdownDiv.textContent = "Next race: " + nextRace.title + " starts in " + timeStr;
           }
 
           updateCountdown();
@@ -464,7 +381,28 @@
         }
       }
 
-      // Initial load and auto-refresh every minute
+      function loadAndRender() {
+        var scheduleDiv = document.getElementById("schedule");
+        var xhr = new XMLHttpRequest();
+
+        xhr.open("GET", "races.json", true);
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200 || xhr.status === 0) {
+              try {
+                var races = JSON.parse(xhr.responseText);
+                renderSchedule(races);
+              } catch (e) {
+                scheduleDiv.innerHTML = '<div class="error">Error: ' + e.message + '</div>';
+              }
+            } else {
+              scheduleDiv.innerHTML = '<div class="error">Failed to load races.json</div>';
+            }
+          }
+        };
+        xhr.send();
+      }
+
       loadAndRender();
       setInterval(loadAndRender, 60000);
     </script>
