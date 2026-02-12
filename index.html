@@ -464,7 +464,7 @@
               if (imageName) {
                 var img = document.createElement("img");
                 img.className = "race-image";
-                img.src = "tracks/" + imageName;
+                img.src = "/tracks/" + imageName;
                 img.alt = race.track;
                 img.onerror = function () {
                   this.style.display = "none";
