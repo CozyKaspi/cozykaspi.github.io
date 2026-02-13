@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>F1 2026 Schedule</title>
     <style>
-      /* Layout */
       html {
         font-size: 16px;
       }
-
       html,
       body {
         margin: 0;
@@ -19,7 +17,6 @@
         color: #fff;
         font-family: Arial, Helvetica, sans-serif;
       }
-
       .container {
         box-sizing: border-box;
         padding: 8px 12px;
@@ -27,8 +24,6 @@
         margin: 0 auto;
         overflow: auto;
       }
-
-      /* Card */
       .race {
         margin: 8px 0;
         padding: 10px;
@@ -40,12 +35,10 @@
         gap: 12px;
         align-items: flex-start;
       }
-
       .race-content {
         flex: 1;
         min-width: 0;
       }
-
       .race-image {
         width: 120px;
         height: 120px;
@@ -55,8 +48,6 @@
         opacity: 0.8;
         align-self: flex-end;
       }
-
-      /* Countdown */
       .countdown {
         margin: 0 0 12px 0;
         padding: 10px;
@@ -69,8 +60,6 @@
         font-size: 1.1rem;
         line-height: 1.3;
       }
-
-      /* Title / meta */
       .race-title {
         font-weight: 700;
         font-size: 1.1rem;
@@ -78,7 +67,6 @@
         margin-bottom: 4px;
         line-height: 1.2;
       }
-
       .race-meta {
         font-size: 0.75rem;
         opacity: 0.9;
@@ -86,8 +74,6 @@
         color: #d6e1ea;
         line-height: 1.3;
       }
-
-      /* Sessions */
       .session {
         display: flex;
         justify-content: flex-start;
@@ -97,18 +83,15 @@
         line-height: 1.1;
         border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       }
-
       .session:last-child {
         border-bottom: none;
       }
-
       .session-left {
         display: flex;
         align-items: center;
         gap: 8px;
         min-width: 90px;
       }
-
       .session-date {
         font-size: 0.85rem;
         opacity: 0.95;
@@ -116,35 +99,27 @@
         margin-left: 6px;
         text-align: left;
       }
-
-      /* session-label colors */
       .session-label {
         font-weight: 700;
         font-size: 0.8rem;
         color: #ffffff;
         white-space: nowrap;
       }
-
       .session-label--race,
       .session-label--sprint {
         color: #9c27b0;
       }
-
       .session-label--qualifying {
         color: #ff9800;
       }
-
       .session-label--practice {
         color: #ffffff;
       }
-
-      /* Past / current */
       .past {
         opacity: 0.55;
         border-color: rgba(100, 100, 100, 0.5);
         background: rgba(80, 80, 80, 0.03);
       }
-
       .highlight {
         border: 3px solid #ffeb3b;
         background: linear-gradient(
@@ -153,8 +128,6 @@
           rgba(255, 250, 200, 0.015)
         );
       }
-
-      /* small footer */
       .footer {
         font-size: 0.7rem;
         text-align: right;
@@ -163,47 +136,37 @@
         opacity: 0.8;
         color: #b9c4ce;
       }
-
       .error {
         color: #ff8a80;
         margin: 12px 0;
       }
-
-      /* Responsive adjustments */
       @media (max-width: 380px) {
         .container {
           padding: 6px 8px;
         }
-
         .race {
           padding: 8px;
           gap: 10px;
         }
-
         .race-image {
           width: 100px;
           height: 100px;
         }
-
         .race-title {
           font-size: 1rem;
         }
-
         .countdown {
           font-size: 1rem;
           padding: 8px;
         }
-
         .session-left {
           min-width: 80px;
         }
       }
-
       @media (min-width: 600px) {
         html {
           font-size: 18px;
         }
-
         .race-image {
           width: 140px;
           height: 140px;
@@ -217,313 +180,237 @@
       <div id="schedule">Loading schedule…</div>
       <div class="footer" id="updated"></div>
     </div>
-
     <script>
-      /* ES5 COMPATIBLE CODE - NO ARROW FUNCTIONS, NO LET/CONST, NO TEMPLATE LITERALS */
-
-      // Helper to pad numbers with leading zero
-      function pad(n) {
-        return (n < 10 ? "0" : "") + n;
-      }
-
-      var MONTH_ABBREV = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-
-      // Format date as "8 Mar"
-      function formatDateTime(dateStr) {
-        var d = new Date(dateStr);
-        if (isNaN(d.getTime())) return "TBA";
-
-        var day = d.getDate();
-        var month = MONTH_ABBREV[d.getMonth()];
-
-        return day + " " + month;
-      }
-
-      // Determine session type and style
-      function getSessionInfo(session) {
-        var name = session.name.toLowerCase();
-
-        if (name === "p1") return { label: "P1", style: "practice" };
-        if (name === "p2") return { label: "P2", style: "practice" };
-        if (name === "p3") return { label: "P3", style: "practice" };
-        if (name === "sprint qualifying")
-          return { label: "Sprint Q", style: "qualifying" };
-        if (name === "sprint") return { label: "Sprint", style: "sprint" };
-        if (name === "qualifying")
-          return { label: "Qualifying", style: "qualifying" };
-        if (name === "race") return { label: "Race", style: "race" };
-
-        return { label: session.name, style: "practice" };
-      }
-
-      // Strip year from date string
-      function stripYear(dateStr) {
-        return dateStr.replace(/,?\s*\b\d{4}\b/g, "").trim();
-      }
-
-      // Get track image filename based on track name
-      function getTrackImage(track) {
-        var trackImages = {
-          "Albert Park Circuit": "melbourne.avif",
-          "Shanghai International Circuit": "shanghai.avif",
-          "Suzuka Circuit": "suzuka.avif",
-          "Bahrain International Circuit": "bahrain.avif",
-          "Jeddah Corniche Circuit": "jeddah.avif",
-          "Miami International Autodrome": "miami.avif",
-          "Circuit Gilles Villeneuve": "montreal.avif",
-          "Circuit de Monaco": "monaco.avif",
-          "Circuit de Barcelona-Catalunya": "barcelona.avif",
-          "Red Bull Ring": "austria.avif",
-          "Silverstone Circuit": "silverstone.avif",
-          "Circuit de Spa-Francorchamps": "spa.avif",
-          Hungaroring: "hungary.avif",
-          "Circuit Zandvoort": "zandvoort.avif",
-          "Autodromo Nazionale Monza": "monza.avif",
-          "Madrid Street Circuit": "madrid.avif",
-          "Baku City Circuit": "baku.avif",
-          "Marina Bay Street Circuit": "singapore.avif",
-          "Circuit of the Americas": "austin.avif",
-          "Autódromo Hermanos Rodríguez": "mexico.avif",
-          "Autódromo José Carlos Pace": "brazil.avif",
-          "Las Vegas Street Circuit": "lasvegas.avif",
-          "Lusail International Circuit": "qatar.avif",
-          "Yas Marina Circuit": "abudhabi.avif",
-        };
-
-        return trackImages[track] || null;
-      }
-
-      var countdownInterval = null;
-
-      function loadAndRender() {
-        var scheduleDiv = document.getElementById("schedule");
-        var countdownDiv = document.getElementById("countdown");
-        scheduleDiv.innerHTML = "Loading schedule…";
-
-        // Use XMLHttpRequest for ES5 compatibility
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "races.json?_=" + new Date().getTime(), true);
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              try {
-                var races = JSON.parse(xhr.responseText);
-                renderSchedule(races, scheduleDiv, countdownDiv);
-              } catch (err) {
-                scheduleDiv.innerHTML =
-                  '<div class="error">Error parsing schedule data</div>';
-                countdownDiv.textContent = "Countdown unavailable";
-                console.error(err);
+      (function () {
+        function pad(n) {
+          return (n < 10 ? "0" : "") + n;
+        }
+        var MONTH_ABBREV = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        function formatDateTime(dateStr) {
+          var d = new Date(dateStr);
+          if (isNaN(d.getTime())) return "TBA";
+          return d.getDate() + " " + MONTH_ABBREV[d.getMonth()];
+        }
+        function getSessionInfo(session) {
+          var name = session.name.toLowerCase();
+          if (name === "p1") return { label: "P1", style: "practice" };
+          if (name === "p2") return { label: "P2", style: "practice" };
+          if (name === "p3") return { label: "P3", style: "practice" };
+          if (name === "sprint qualifying")
+            return { label: "Sprint Q", style: "qualifying" };
+          if (name === "sprint") return { label: "Sprint", style: "sprint" };
+          if (name === "qualifying")
+            return { label: "Qualifying", style: "qualifying" };
+          if (name === "race") return { label: "Race", style: "race" };
+          return { label: session.name, style: "practice" };
+        }
+        function stripYear(dateStr) {
+          return dateStr.replace(/,?\s*\b\d{4}\b/g, "").trim();
+        }
+        function getTrackImage(track) {
+          var trackImages = {
+            "Albert Park Circuit": "melbourne.avif",
+            "Shanghai International Circuit": "shanghai.avif",
+            "Suzuka Circuit": "suzuka.avif",
+            "Bahrain International Circuit": "bahrain.avif",
+            "Jeddah Corniche Circuit": "jeddah.avif",
+            "Miami International Autodrome": "miami.avif",
+            "Circuit Gilles Villeneuve": "montreal.avif",
+            "Circuit de Monaco": "monaco.avif",
+            "Circuit de Barcelona-Catalunya": "barcelona.avif",
+            "Red Bull Ring": "austria.avif",
+            "Silverstone Circuit": "silverstone.avif",
+            "Circuit de Spa-Francorchamps": "spa.avif",
+            Hungaroring: "hungary.avif",
+            "Circuit Zandvoort": "zandvoort.avif",
+            "Autodromo Nazionale Monza": "monza.avif",
+            "Madrid Street Circuit": "madrid.avif",
+            "Baku City Circuit": "baku.avif",
+            "Marina Bay Street Circuit": "singapore.avif",
+            "Circuit of the Americas": "austin.avif",
+            "Autódromo Hermanos Rodríguez": "mexico.avif",
+            "Autódromo José Carlos Pace": "brazil.avif",
+            "Las Vegas Street Circuit": "lasvegas.avif",
+            "Lusail International Circuit": "qatar.avif",
+            "Yas Marina Circuit": "abudhabi.avif",
+          };
+          return trackImages[track] || null;
+        }
+        var countdownInterval = null;
+        function renderSchedule(races, scheduleDiv, countdownDiv) {
+          var now = new Date();
+          var past = [],
+            upcoming = [],
+            current = null;
+          for (var i = 0; i < races.length; i++) {
+            var race = races[i];
+            var p1Time = null,
+              raceTime = null;
+            for (var j = 0; j < race.sessions.length; j++) {
+              var s = race.sessions[j];
+              if (s.name === "P1") p1Time = new Date(s.localDateTime);
+              if (s.name === "Race") raceTime = new Date(s.localDateTime);
+            }
+            if (p1Time && raceTime) {
+              var raceEnd = new Date(raceTime.getTime() + 7200000);
+              if (now >= p1Time && now <= raceEnd) current = race;
+              else if (now < p1Time) upcoming.push(race);
+              else past.push(race);
+            } else upcoming.push(race);
+          }
+          var nextRace = null,
+            nextRaceTime = null;
+          for (var i = 0; i < upcoming.length; i++) {
+            for (var j = 0; j < upcoming[i].sessions.length; j++) {
+              var s = upcoming[i].sessions[j];
+              if (s.name === "Race") {
+                var raceTime = new Date(s.localDateTime);
+                if (!nextRaceTime || raceTime < nextRaceTime) {
+                  nextRaceTime = raceTime;
+                  nextRace = upcoming[i];
+                }
+                break;
               }
-            } else {
-              scheduleDiv.innerHTML =
-                '<div class="error">Error loading schedule: HTTP ' +
-                xhr.status +
-                "</div>";
-              countdownDiv.textContent = "Countdown unavailable";
             }
           }
-        };
-        xhr.onerror = function () {
-          scheduleDiv.innerHTML =
-            '<div class="error">Error loading schedule: Network error</div>';
-          countdownDiv.textContent = "Countdown unavailable";
-        };
-        xhr.send();
-      }
-
-      function renderSchedule(races, scheduleDiv, countdownDiv) {
-        var now = new Date();
-        var past = [];
-        var upcoming = [];
-        var current = null;
-
-        // Categorize races
-        for (var i = 0; i < races.length; i++) {
-          var race = races[i];
-
-          // Find P1 and Race times
-          var p1Time = null;
-          var raceTime = null;
-
-          for (var j = 0; j < race.sessions.length; j++) {
-            var s = race.sessions[j];
-            if (s.name === "P1") p1Time = new Date(s.localDateTime);
-            if (s.name === "Race") raceTime = new Date(s.localDateTime);
-          }
-
-          if (p1Time && raceTime) {
-            var raceEnd = new Date(raceTime.getTime() + 2 * 60 * 60 * 1000);
-
-            if (now >= p1Time && now <= raceEnd) {
-              current = race;
-            } else if (now < p1Time) {
-              upcoming.push(race);
-            } else {
-              past.push(race);
+          scheduleDiv.innerHTML = "";
+          function renderRace(race, isPast, isHighlight) {
+            var wrap = document.createElement("div");
+            wrap.className =
+              "race" +
+              (isPast ? " past" : "") +
+              (isHighlight ? " highlight" : "");
+            var content = document.createElement("div");
+            content.className = "race-content";
+            var title = document.createElement("div");
+            title.className = "race-title";
+            title.textContent = race.title;
+            var meta = document.createElement("div");
+            meta.className = "race-meta";
+            meta.textContent =
+              race.location +
+              " • " +
+              race.track +
+              " • " +
+              stripYear(race.dates);
+            content.appendChild(title);
+            content.appendChild(meta);
+            for (var j = 0; j < race.sessions.length; j++) {
+              var session = race.sessions[j];
+              var info = getSessionInfo(session);
+              var sessionDiv = document.createElement("div");
+              sessionDiv.className = "session";
+              var left = document.createElement("div");
+              left.className = "session-left";
+              var label = document.createElement("span");
+              label.className = "session-label session-label--" + info.style;
+              label.textContent = info.label;
+              left.appendChild(label);
+              var dateSpan = document.createElement("div");
+              dateSpan.className = "session-date";
+              dateSpan.textContent = formatDateTime(session.localDateTime);
+              sessionDiv.appendChild(left);
+              sessionDiv.appendChild(dateSpan);
+              content.appendChild(sessionDiv);
             }
-          } else {
-            upcoming.push(race);
+            wrap.appendChild(content);
+            var imageName = getTrackImage(race.track);
+            if (imageName) {
+              var img = document.createElement("img");
+              img.className = "race-image";
+              img.src = "tracks/" + imageName;
+              img.alt = race.track;
+              img.onerror = function () {
+                this.style.display = "none";
+              };
+              wrap.appendChild(img);
+            }
+            scheduleDiv.appendChild(wrap);
           }
-        }
-
-        // Find next race for countdown
-        var nextRace = null;
-        var nextRaceTime = null;
-
-        for (var i = 0; i < upcoming.length; i++) {
-          for (var j = 0; j < upcoming[i].sessions.length; j++) {
-            var s = upcoming[i].sessions[j];
-            if (s.name === "Race") {
-              var raceTime = new Date(s.localDateTime);
-              if (!nextRaceTime || raceTime < nextRaceTime) {
-                nextRaceTime = raceTime;
-                nextRace = upcoming[i];
+          if (current) renderRace(current, false, true);
+          for (var i = 0; i < upcoming.length; i++)
+            renderRace(upcoming[i], false, false);
+          for (var i = 0; i < past.length; i++)
+            renderRace(past[i], true, false);
+          document.getElementById("updated").textContent =
+            "Last checked: " + new Date().toLocaleString();
+          if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+          }
+          if (nextRaceTime && nextRace) {
+            function updateCountdown() {
+              var now = new Date();
+              var diff = nextRaceTime - now;
+              if (diff <= 0) {
+                countdownDiv.textContent =
+                  "Next race: " + nextRace.title + " starting now or finished";
+                clearInterval(countdownInterval);
+                return;
               }
-              break;
-            }
-          }
-        }
-
-        // Render races
-        scheduleDiv.innerHTML = "";
-
-        function renderRace(race, isPast, isHighlight) {
-          var wrap = document.createElement("div");
-          wrap.className =
-            "race" +
-            (isPast ? " past" : "") +
-            (isHighlight ? " highlight" : "");
-
-          var content = document.createElement("div");
-          content.className = "race-content";
-
-          var title = document.createElement("div");
-          title.className = "race-title";
-          title.textContent = race.title;
-
-          var meta = document.createElement("div");
-          meta.className = "race-meta";
-          meta.textContent =
-            race.location + " • " + race.track + " • " + stripYear(race.dates);
-
-          content.appendChild(title);
-          content.appendChild(meta);
-
-          // Render sessions
-          for (var j = 0; j < race.sessions.length; j++) {
-            var session = race.sessions[j];
-            var info = getSessionInfo(session);
-
-            var sessionDiv = document.createElement("div");
-            sessionDiv.className = "session";
-
-            var left = document.createElement("div");
-            left.className = "session-left";
-
-            var label = document.createElement("span");
-            label.className = "session-label session-label--" + info.style;
-            label.textContent = info.label;
-
-            left.appendChild(label);
-
-            var dateSpan = document.createElement("div");
-            dateSpan.className = "session-date";
-            dateSpan.textContent = formatDateTime(session.localDateTime);
-
-            sessionDiv.appendChild(left);
-            sessionDiv.appendChild(dateSpan);
-            content.appendChild(sessionDiv);
-          }
-
-          wrap.appendChild(content);
-
-          // Add track image if available
-          var imageName = getTrackImage(race.track);
-          if (imageName) {
-            var img = document.createElement("img");
-            img.className = "race-image";
-            img.src = "tracks/" + imageName;
-            img.alt = race.track;
-            img.onerror = function () {
-              this.style.display = "none";
-            };
-            wrap.appendChild(img);
-          }
-
-          scheduleDiv.appendChild(wrap);
-        }
-
-        // Render in order: current, upcoming, past
-        if (current) renderRace(current, false, true);
-        for (var i = 0; i < upcoming.length; i++)
-          renderRace(upcoming[i], false, false);
-        for (var i = 0; i < past.length; i++) renderRace(past[i], true, false);
-
-        // Update timestamp
-        document.getElementById("updated").textContent =
-          "Last checked: " + new Date().toLocaleString();
-
-        // Setup countdown
-        if (countdownInterval) {
-          clearInterval(countdownInterval);
-          countdownInterval = null;
-        }
-
-        if (nextRaceTime && nextRace) {
-          function updateCountdown() {
-            var now = new Date();
-            var diff = nextRaceTime - now;
-
-            if (diff <= 0) {
+              var days = Math.floor(diff / 86400000);
+              var hours = Math.floor((diff % 86400000) / 3600000);
+              var mins = Math.floor((diff % 3600000) / 60000);
+              var secs = Math.floor((diff % 60000) / 1000);
+              var timeStr =
+                (days > 0 ? days + "d " : "") +
+                pad(hours) +
+                ":" +
+                pad(mins) +
+                ":" +
+                pad(secs);
               countdownDiv.textContent =
-                "Next race: " + nextRace.title + " starting now or finished";
-              clearInterval(countdownInterval);
-              return;
+                "Next race: " + nextRace.title + " starts in " + timeStr;
             }
-
-            var days = Math.floor(diff / (24 * 60 * 60 * 1000));
-            var hours = Math.floor(
-              (diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000),
-            );
-            var mins = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
-            var secs = Math.floor((diff % (60 * 1000)) / 1000);
-
-            var timeStr =
-              (days > 0 ? days + "d " : "") +
-              pad(hours) +
-              ":" +
-              pad(mins) +
-              ":" +
-              pad(secs);
-
-            countdownDiv.textContent =
-              "Next race: " + nextRace.title + " starts in " + timeStr;
-          }
-
-          updateCountdown();
-          countdownInterval = setInterval(updateCountdown, 1000);
-        } else {
-          countdownDiv.textContent = "No upcoming races found.";
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+          } else countdownDiv.textContent = "No upcoming races found.";
         }
-      }
-
-      // Initial load and auto-refresh every minute
-      loadAndRender();
-      setInterval(loadAndRender, 60000);
+        function loadAndRender() {
+          var scheduleDiv = document.getElementById("schedule");
+          var countdownDiv = document.getElementById("countdown");
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "races.json?t=" + new Date().getTime(), true);
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status === 200) {
+                try {
+                  var races = JSON.parse(xhr.responseText);
+                  renderSchedule(races, scheduleDiv, countdownDiv);
+                } catch (err) {
+                  scheduleDiv.innerHTML =
+                    '<div class="error">Error: ' + err.message + "</div>";
+                  countdownDiv.textContent = "Error loading data";
+                }
+              } else {
+                scheduleDiv.innerHTML =
+                  '<div class="error">HTTP ' + xhr.status + "</div>";
+                countdownDiv.textContent = "Error loading";
+              }
+            }
+          };
+          xhr.send();
+        }
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", loadAndRender);
+        } else {
+          loadAndRender();
+        }
+        setInterval(loadAndRender, 60000);
+      })();
     </script>
   </body>
 </html>
