@@ -24,7 +24,7 @@
         height: 100%;
       }
 
-      /* Card with track image support */
+      /* Card with track image support - FIXED: content first, image last */
       .race {
         margin: 0.6vh 0;
         padding: 0.8vh;
@@ -40,6 +40,7 @@
       .race-content {
         flex: 1;
         min-width: 0;
+        order: 1;
       }
       .race-image {
         width: 12vh;
@@ -49,6 +50,7 @@
         object-fit: contain;
         opacity: 0.8;
         align-self: flex-end;
+        order: 2;
       }
 
       /* Countdown */
@@ -76,11 +78,6 @@
         opacity: 0.9;
         margin-bottom: 0.6vh;
         color: #d6e1ea;
-      }
-
-      /* Session wrapper to contain the border */
-      .sessions-wrapper {
-        border-bottom: none;
       }
 
       /* Sessions - line only spans content, not full width */
