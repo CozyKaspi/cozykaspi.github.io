@@ -18,13 +18,13 @@
       .container {
         box-sizing: border-box;
         padding: 0.6vh 1vh;
-        max-width: 520px;
+        max-width: 600px;
         margin: 0 auto;
         overflow: auto;
         height: 100%;
       }
 
-      /* Card with track image support - image positioned absolutely to the right */
+      /* Card with track image support */
       .race {
         margin: 0.6vh 0;
         padding: 0.8vh;
@@ -32,22 +32,27 @@
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.06);
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset;
-        position: relative;
-        padding-right: 13.5vh;
       }
 
-      .race-content {
-        width: 100%;
+      .race-body {
+        display: flex;
+        flex-direction: row;
+        gap: 1.2vh;
+        align-items: flex-end;
+        margin-top: -4vh;
+      }
+      .race-sessions {
+        flex: 1;
+        min-width: 0;
       }
       .race-image {
         width: 18vh;
         height: 18vh;
-        position: absolute;
-        right: 0.8vh;
-        bottom: -3vh;
+        flex-shrink: 0;
         border-radius: 6px;
         object-fit: contain;
         opacity: 0.8;
+        margin-bottom: -4vh;
       }
 
       /* Countdown */
@@ -75,7 +80,7 @@
       .race-meta {
         font-size: 1.4vh;
         opacity: 0.9;
-        margin-bottom: 0.6vh;
+        margin-bottom: 0.2vh;
         color: #d6e1ea;
         line-height: 1.3;
       }
@@ -286,9 +291,6 @@
               (isPast ? " past" : "") +
               (isHighlight ? " highlight" : "");
 
-            var content = document.createElement("div");
-            content.className = "race-content";
-
             var title = document.createElement("div");
             title.className = "race-title";
             title.textContent = race.title;
@@ -302,8 +304,14 @@
               " • " +
               stripYear(race.dates);
 
-            content.appendChild(title);
-            content.appendChild(meta);
+            wrap.appendChild(title);
+            wrap.appendChild(meta);
+
+            var body = document.createElement("div");
+            body.className = "race-body";
+
+            var sessions = document.createElement("div");
+            sessions.className = "race-sessions";
 
             for (var j = 0; j < race.sessions.length; j++) {
               var session = race.sessions[j];
@@ -327,10 +335,10 @@
               dateSpan.textContent = formatDateTime(session.localDateTime);
               sessionDiv.appendChild(dateSpan);
 
-              content.appendChild(sessionDiv);
+              sessions.appendChild(sessionDiv);
             }
 
-            wrap.appendChild(content);
+            body.appendChild(sessions);
 
             var imageName = getTrackImage(race.track);
             if (imageName) {
@@ -341,9 +349,10 @@
               img.onerror = function () {
                 this.style.display = "none";
               };
-              wrap.appendChild(img);
+              body.appendChild(img);
             }
 
+            wrap.appendChild(body);
             scheduleDiv.appendChild(wrap);
           }
 
@@ -428,3 +437,4 @@
     </script>
   </body>
 </html>
+
