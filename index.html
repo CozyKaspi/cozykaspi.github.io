@@ -376,7 +376,7 @@
               var diff = nextRaceTime - now;
               if (diff <= 0) {
                 countdownDiv.textContent =
-                  "Test: " + nextRace.title + " Test";
+                  "Next race: " + nextRace.title + " starting now or finished";
                 clearInterval(countdownInterval);
                 return;
               }
@@ -392,7 +392,7 @@
                 ":" +
                 pad(secs);
               countdownDiv.textContent =
-                "Next race: " + nextRace.title + " starts in " + timeStr;
+                "Test: " + nextRace.title + " Test " + timeStr;
             }
             updateCountdown();
             countdownInterval = setInterval(updateCountdown, 1000);
