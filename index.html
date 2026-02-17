@@ -32,14 +32,15 @@
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.06);
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25) inset;
+        position: relative;
+        overflow: visible;
       }
 
       .race-body {
         display: flex;
         flex-direction: row;
         gap: 1.2vh;
-        align-items: flex-end;
-        margin-top: -4vh;
+        align-items: center;
       }
       .race-sessions {
         flex: 1;
@@ -47,12 +48,11 @@
       }
       .race-image {
         width: 18vh;
-        height: 18vh;
+        height: 12vh;
         flex-shrink: 0;
         border-radius: 6px;
         object-fit: contain;
         opacity: 0.8;
-        margin-bottom: -4vh;
       }
 
       /* Countdown */
