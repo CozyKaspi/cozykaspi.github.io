@@ -11,7 +11,7 @@
         margin: 0;
         padding: 0;
         height: 100%;
-        background: #0d1b2a;
+        background: #25262f;
         color: #fff;
         font-family: Arial, Helvetica, sans-serif;
       }
@@ -114,10 +114,10 @@
       }
       .session-label--race,
       .session-label--sprint {
-        color: #9c27b0;
+        color: #e657ff;
       }
       .session-label--qualifying {
-        color: #ff9800;
+        color: #fff708;
       }
       .session-label--practice {
         color: #ffffff;
@@ -212,29 +212,29 @@
         function getTrackImage(track) {
           var trackImages = {
             "Albert Park Circuit": "melbourne.png",
-            "Shanghai International Circuit": "shanghai.avif",
-            "Suzuka Circuit": "suzuka.avif",
-            "Bahrain International Circuit": "bahrain.avif",
-            "Jeddah Corniche Circuit": "jeddah.avif",
-            "Miami International Autodrome": "miami.avif",
-            "Circuit Gilles Villeneuve": "montreal.avif",
-            "Circuit de Monaco": "monaco.avif",
-            "Circuit de Barcelona-Catalunya": "barcelona.avif",
-            "Red Bull Ring": "austria.avif",
-            "Silverstone Circuit": "silverstone.avif",
-            "Circuit de Spa-Francorchamps": "spa.avif",
-            Hungaroring: "hungary.avif",
-            "Circuit Zandvoort": "zandvoort.avif",
-            "Autodromo Nazionale Monza": "monza.avif",
-            "Madrid Street Circuit": "madrid.avif",
-            "Baku City Circuit": "baku.avif",
-            "Marina Bay Street Circuit": "singapore.avif",
-            "Circuit of the Americas": "austin.avif",
-            "Autódromo Hermanos Rodríguez": "mexico.avif",
-            "Autódromo José Carlos Pace": "brazil.avif",
-            "Las Vegas Street Circuit": "lasvegas.avif",
-            "Lusail International Circuit": "qatar.avif",
-            "Yas Marina Circuit": "abudhabi.avif",
+            "Shanghai International Circuit": "shanghai.png",
+            "Suzuka Circuit": "suzuka.png",
+            "Bahrain International Circuit": "bahrain.png",
+            "Jeddah Corniche Circuit": "jeddah.png",
+            "Miami International Autodrome": "miami.png",
+            "Circuit Gilles Villeneuve": "montreal.png",
+            "Circuit de Monaco": "monaco.png",
+            "Circuit de Barcelona-Catalunya": "barcelona.png",
+            "Red Bull Ring": "austria.png",
+            "Silverstone Circuit": "silverstone.png",
+            "Circuit de Spa-Francorchamps": "spa.png",
+            Hungaroring: "hungary.png",
+            "Circuit Zandvoort": "zandvoort.png",
+            "Autodromo Nazionale Monza": "monza.png",
+            "Madrid Street Circuit": "madrid.png",
+            "Baku City Circuit": "baku.png",
+            "Marina Bay Street Circuit": "singapore.png",
+            "Circuit of the Americas": "austin.png",
+            "Autódromo Hermanos Rodríguez": "mexico.png",
+            "Autódromo José Carlos Pace": "brazil.png",
+            "Las Vegas Street Circuit": "lasvegas.png",
+            "Lusail International Circuit": "qatar.png",
+            "Yas Marina Circuit": "abudhabi.png",
           };
           return trackImages[track] || null;
         }
@@ -392,7 +392,7 @@
                 ":" +
                 pad(secs);
               countdownDiv.textContent =
-                "Test2 : " + nextRace.title + " starts in " + timeStr;
+                "Next race : " + nextRace.title + " starts in " + timeStr;
             }
             updateCountdown();
             countdownInterval = setInterval(updateCountdown, 1000);
